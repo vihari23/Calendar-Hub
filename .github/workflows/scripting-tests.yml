@@ -27,3 +27,5 @@ jobs:
         run: npm install --no-save --no-audit --no-fund --prefix /tmp/calendar-hub-ts typescript@5.9.3
       - name: Test TSX syntax, calendar ICS parser, privacy constraints, selectors, colors, full-page row count
         run: node tests/test_scripting.cjs
+      - name: Simulate widget rendering, custom calendars, and view parameters
+        run: node tests/test_scripting_render.cjs
