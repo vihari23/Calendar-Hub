@@ -1,0 +1,9 @@
+{
+  "name": "Vihari Calendar Hub Full Page",
+  "icon": "calendar.badge.clock",
+  "color": "#0A1C3A",
+  "version": "1.0.0",
+  "description": "Extra-large portrait iPhone calendar widget with custom ICS feeds, colors and independent widget views.",
+  "runInApp": true,
+  "intentInputTypes": []
+}

@@ -48,6 +48,14 @@ class MonitorTests(unittest.TestCase):
             status=build(config,p/"site",NOW,lambda _:sample())
             self.assertTrue(status["healthy"])
             self.assertIn("Test event",(p/"site"/"index.html").read_text())
+            from zipfile import ZipFile
+            archive=p/"site"/"CalendarHubFullPage.zip"
+            with ZipFile(archive) as bundle:
+                self.assertEqual(set(bundle.namelist()),{
+                    "script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"})
+                self.assertEqual(json.loads(bundle.read("script.json"))["name"],"Vihari Calendar Hub Full Page")
+                self.assertIn(b"systemExtraLargePortrait",bundle.read("widget.tsx"))
+                self.assertIn(b"appGroupDocumentsDirectory",bundle.read("settings.ts"))
             widget=json.loads((p/"site"/"widget.json").read_text())
             self.assertEqual(widget["schema_version"],1)
             self.assertEqual(len(widget["feeds"]),1)

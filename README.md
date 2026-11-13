@@ -41,3 +41,7 @@ To place widgets: Home Screen → ＋ → Scriptable → Medium/Large → Edit W
 The widget is **not a custom native iOS app extension**; it relies on Scriptable, and iOS ultimately controls refresh frequency. Complex RRULEs and time-zone rules in arbitrary external ICS feeds may require using Apple Calendar for authoritative date rendering. Private calendar URLs never appear in the public Hub.
 
 **Widget privacy:** custom feeds and colors are saved only in Scriptable's local library directory. To see a new ICS feed in your widgets, use Scriptable → Calendar Hub Widget → Manage calendars + colors. Each widget uses the view named by its widget **Parameter**. The Calendar Hub's public dashboard does **not** automatically include your locally added calendars. Scriptable widgets display a limited event preview; tapping the widget opens the fully scrollable on-device agenda. For recurring feeds with complex RRULEs or time zones, double-check dates against Apple Calendar.
+
+## Full-page iPhone widget (iOS 27+)
+
+A separate [Scripting full-page portrait widget](scripting/README.md) is available. Download the generated [importable project ZIP](https://vihari23.github.io/Calendar-Hub/CalendarHubFullPage.zip) or import the project from `https://github.com/vihari23/Calendar-Hub/tree/main/scripting` in the Scripting iPhone app. Installation is device-dependent: desktop tests passing does not verify actual iPhone rendering.

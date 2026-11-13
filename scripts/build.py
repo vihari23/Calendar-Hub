@@ -4,6 +4,7 @@ from datetime import datetime, date, timezone, timedelta
 from html import escape as html_escape
 import json
 import shutil
+from zipfile import ZipFile, ZIP_DEFLATED
 from scripts.icon_render import render_icons
 from pathlib import Path
 import re
@@ -248,6 +249,14 @@ def build(config,output,now=None,getter=download):
             raise FileNotFoundError(f"Missing required PWA asset: {source}")
         shutil.copyfile(source,output/name)
     render_icons(assets/"icon-source.png",output)
+    # Fully self-contained Scripting widget project for direct iPhone import.
+    scripting=Path(__file__).resolve().parents[1]/"scripting"
+    with ZipFile(output/"CalendarHubFullPage.zip","w",compression=ZIP_DEFLATED,compresslevel=8) as package:
+        for name in ("script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"):
+            source=scripting/name
+            if not source.is_file():
+                raise FileNotFoundError(f"Missing full-page widget source: {source}")
+            package.write(source,arcname=name)
     shutil.copyfile(Path(__file__).resolve().parents[1]/"scriptable"/"CalendarHubWidget.js",output/"CalendarHubWidget.js")
     for f in report["feeds"]:
         print(f'{f["name"]}: {f["status"]} ({f["events"]} events) - {f["detail"]}')

@@ -10,7 +10,7 @@ Scriptable currently documents the iPhone Large widget and iPad Extra Large. Scr
 
 1. Install/update [Scripting](https://scriptingapp.github.io/) on the iPhone.
 2. Create a new Scripting script project named **Calendar Hub Full Page**.
-3. Add **four files** from this folder to that project: `index.tsx`, `widget.tsx`, `core.ts`, `settings.ts` (preserve exact names).
+3. **Easiest:** Import the ready-made [CalendarHubFullPage.zip](https://vihari23.github.io/Calendar-Hub/CalendarHubFullPage.zip) in Scripting, or use Scripting's GitHub script import with `https://github.com/vihari23/Calendar-Hub/tree/main/scripting`. The package contains the required `script.json`, `index.tsx`, `widget.tsx`, `core.ts`, and `settings.ts` files. Alternatively, create a project manually and copy those exact files.
 4. Run `index.tsx` in Scripting to add new ICS calendar URLs and choose colors. Local settings are written to Scripting's **App Group** folder, which widgets can read; they do not go to public GitHub.
 5. Create a named widget view (for example `family`) and toggle which calendars belong to it.
 6. Use **Preview XL portrait widget** inside the Scripting settings to validate size and rendering on the device.
