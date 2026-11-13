@@ -29,6 +29,13 @@ class MonitorTests(unittest.TestCase):
         with self.assertRaises(ValueError):parse_calendar(sample(uid=False),NOW,1)
     def test_stale(self):
         self.assertEqual(check_feed(item(),NOW,lambda _:sample("20260901T000000Z"))["status"],"stale")
+    def test_without_dtstamp_uses_verified_publication(self):
+        raw=sample().replace(b"DTSTAMP:20261113T200000Z\r\n",b"")
+        published=datetime(2026,11,13,18,0,tzinfo=timezone.utc)
+        r=check_feed(item(),NOW,lambda _:raw,publish_getter=lambda _:published)
+        self.assertEqual(r["status"],"healthy")
+        self.assertEqual(r["freshness_basis"],"github_actions_success")
+
     def test_network_error(self):
         def fail(url):raise ValueError("service unavailable")
         self.assertEqual(check_feed(item(),NOW,fail)["status"],"error")
