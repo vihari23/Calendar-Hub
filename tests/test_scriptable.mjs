@@ -45,4 +45,45 @@ const rdate=["BEGIN:VCALENDAR","BEGIN:VEVENT","UID:rdate","DTSTART;VALUE=DATE:20
 assert.equal(functions.parseICS(rdate,"2026-11-13","2026-11-30").length,1);
 assert.equal(functions.dayFromICS("20261114T003000Z"),"2026-11-13");
 assert.equal(functions.dayFromICS("20261114T080000"),"2026-11-14");
+
+// Check custom feed colors and independently selected events for each view.
+const stored=new Map();
+const onDay=new Date(Date.now()-7*3600000).toISOString().slice(0,10);
+const ymd=onDay.replace(/-/g,"");
+const mockICS=["BEGIN:VCALENDAR","BEGIN:VEVENT","UID:other-1",
+"DTSTART;VALUE=DATE:"+ymd,"SUMMARY:Additional calendar event",
+"END:VEVENT","END:VCALENDAR"].join("\r\n");
+const sandbox={FileManager:{local:()=>({
+ libraryDirectory:()=>"/tmp",
+ joinPath:(x,y)=>x+"/"+y,
+ fileExists:p=>stored.has(p),
+ readString:p=>stored.get(p),
+ writeString:(p,v)=>stored.set(p,v)
+})},Request:class {
+ constructor(url){this.url=url;}
+ async loadJSON(){return {schema_version:1,feeds:[
+ {id:"panchangam",status:"healthy",upcoming:[
+ {date:onDay,name:"Shukla Panchami"},
+ {date:onDay,name:"🪔 Festival day"}]},
+ {id:"india_ott",status:"healthy",upcoming:[{date:onDay,name:"OTT: New movie"}]},
+ {id:"bulk_trash",status:"healthy",upcoming:[{date:onDay,name:"Collection"}]}
+ ]};}
+ async loadString(){return mockICS;}
+}};
+const api=vm.runInNewContext(stripped+"\n({defaults,loadEvents,viewFor})",sandbox);
+const all=api.defaults();
+const filtered=await api.loadEvents(all,api.viewFor(all,"all"),true);
+assert.equal(filtered.events.some(x=>x.name==="Shukla Panchami"),false);
+assert.equal(filtered.events.some(x=>x.name==="🪔 Festival day"),true);
+assert.equal(filtered.events.some(x=>x.id==="india_ott"),true);
+const culture=await api.loadEvents(all,api.viewFor(all,"culture"),true);
+assert.equal(culture.events.some(x=>x.name==="Shukla Panchami"),true);
+all.feeds.push({id:"custom",name:"Additional ICS",kind:"ics",url:"https://example.org/feed.ics",color:"#55AAFF"});
+all.views.push({id:"family",name:"Family",feeds:["custom","india_ott"],dailyPanchangam:false});
+const family=await api.loadEvents(all,api.viewFor(all,"family"),true);
+assert.equal(family.events.length,2);
+assert.equal(family.events.find(x=>x.id==="custom").color,"#55AAFF");
+assert.equal(family.events.some(x=>x.id==="bulk_trash"),false);
+console.log("Widget presets, custom ICS, on-device colors and event filtering: passed");
+
 console.log("Scriptable widget: 20 functional assertions passed");
