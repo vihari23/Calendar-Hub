@@ -5,12 +5,14 @@ on:
     paths:
       - 'scripting/**'
       - 'tests/test_scripting.cjs'
+      - 'tests/test_scripting_render.cjs'
       - '.github/workflows/scripting-tests.yml'
   pull_request:
     branches: [main]
     paths:
       - 'scripting/**'
       - 'tests/test_scripting.cjs'
+      - 'tests/test_scripting_render.cjs'
       - '.github/workflows/scripting-tests.yml'
   workflow_dispatch:
 permissions:
