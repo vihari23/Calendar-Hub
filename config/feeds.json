@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "hub_name": "Vihari Calendar Hub",
+  "look_ahead_days": 45,
+  "feeds": [
+    {
+      "id": "panchangam",
+      "name": "Phoenix Telugu Panchangam",
+      "description": "Tithi, festivals and observances for Phoenix",
+      "kind": "Festivals & culture",
+      "url": "https://vihari23.github.io/phoenix-telugu-panchang/phoenix-drik.ics",
+      "source_repository": "https://github.com/vihari23/phoenix-telugu-panchang",
+      "expected_update": "monthly",
+      "max_age_hours": 1100,
+      "min_events": 300,
+      "enabled": true
+    },
+    {
+      "id": "india_ott",
+      "name": "India OTT Releases",
+      "description": "Indian films and series release dates",
+      "kind": "Entertainment",
+      "url": "https://raw.githubusercontent.com/vihari23/Movie-OTT-/main/site/india-ott.ics",
+      "source_repository": "https://github.com/vihari23/Movie-OTT-",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 3,
+      "enabled": true
+    },
+    {
+      "id": "bulk_trash",
+      "name": "Arizona Home Bulk Trash",
+      "description": "Glendale collection weeks and Aloravita booking reminders",
+      "kind": "Home & municipal",
+      "url": "https://raw.githubusercontent.com/vihari23/Bulk-Trash-Glendale-Peoria/main/site/home-bulk-trash.ics",
+      "source_repository": "https://github.com/vihari23/Bulk-Trash-Glendale-Peoria",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 1,
+      "enabled": true
+    }
+  ]
+}
