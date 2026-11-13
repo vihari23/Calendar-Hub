@@ -19,7 +19,7 @@ Scriptable currently documents the iPhone Large widget and iPad Extra Large. Scr
 
 ### Constraints and safeguards
 
-- Basic ICS VEVENTs and simple monthly/yearly RRULE are supported. Complex recurrence, RDATE, EXDATE and non-Phoenix time zones need checking in Apple Calendar and are not guaranteed.
+- Basic ICS VEVENTs and simple monthly/yearly RRULE are supported, including simple UNTIL limits. Complex recurrence with COUNT, BY* filters, RDATE, EXDATE or RECURRENCE-ID is not expanded; those calendars should be checked in Apple Calendar. Events in an unknown non-Phoenix TZID are omitted rather than guessing their date.
 - Home Screen widgets update at iOS/WidgetKit's discretion, not at a guaranteed hourly rate.
 - Public source data comes from `https://vihari23.github.io/Calendar-Hub/widget.json`; custom URLs are fetched on-device.
 - The widget is **not** part of the Calendar Hub PWA installation. It uses the separate Scripting app.

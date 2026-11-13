@@ -84,19 +84,27 @@ export function parseICS(text:string,start:string,end:string):{events:{date:stri
   if(line==="END:VEVENT"){
    if(entry&&entry.DTSTART&&entry.SUMMARY&&entry.STATUS!=="CANCELLED"){
     const title=unescapeICS(entry.SUMMARY),day=icsDate(entry.DTSTART);
-    if(day) {
+    // Don't guess event dates for unknown time zones.
+    const unknownZone=!!entry.TZID && entry.TZID!=="America/Phoenix";
+    if(unknownZone){unsupported++;}
+    else if(day) {
      add(day,title);
-     // Support basic yearly and monthly anniversary reminders.
+     // Expand only simple date-anchored yearly/monthly recurrences.
+     // Complex exceptions/COUNT/BY* patterns must be handled in Apple Calendar.
      if(entry.RRULE){
-      const r=entry.RRULE.toUpperCase(),freq=/FREQ=(YEARLY|MONTHLY)/.exec(r)?.[1];
-      const m=/INTERVAL=(\d+)/.exec(r),intv=m?Number(m[1]):1;
-      if(freq&&intv>0&&intv<=12&&!/BYDAY|BYSETPOS|COUNT|BYMONTHDAY|WKST/.test(r)){
+      const r=entry.RRULE.toUpperCase(),freq=/FREQ=(YEARLY|MONTHLY)(?:;|$)/.exec(r)?.[1];
+      const m=/(?:^|;)INTERVAL=(\d+)(?:;|$)/.exec(r),intv=m?Number(m[1]):1;
+      const untilRaw=/(?:^|;)UNTIL=([^;]+)/.exec(r)?.[1];
+      const until=untilRaw?icsDate(untilRaw):null;
+      if(freq&&intv>0&&intv<=12&&!entry.COMPLEX&&!/BYDAY|BYSETPOS|COUNT|BYMONTHDAY|BYMONTH|WKST/.test(r)){
        for(let n=1;n<=120;n++){
         const base=new Date(day+"T12:00:00Z");
         if(freq==="YEARLY")base.setUTCFullYear(base.getUTCFullYear()+n*intv);
         else base.setUTCMonth(base.getUTCMonth()+n*intv);
+        // Jan 31 + one month must not become an invented March date.
+        if(base.getUTCDate()!==Number(day.slice(8,10)))continue;
         const next=base.toISOString().slice(0,10);
-        if(next>end)break;
+        if(next>end||(until&&next>until))break;
         if(next>day)add(next,title);
        }
       }else unsupported++;
@@ -105,8 +113,12 @@ export function parseICS(text:string,start:string,end:string):{events:{date:stri
    }
    entry=null;continue;
   }
-  if(entry){const p=line.indexOf(":");if(p>0){const key=line.slice(0,p).split(";")[0].toUpperCase();
-   if(["DTSTART","SUMMARY","STATUS","RRULE"].includes(key))entry[key]=line.slice(p+1);}}
+  if(entry){const p=line.indexOf(":");if(p>0){
+   const meta=line.slice(0,p),key=meta.split(";")[0].toUpperCase();
+   if(["EXDATE","RDATE","RECURRENCE-ID"].includes(key))entry.COMPLEX="1";
+   if(key==="DTSTART")entry.TZID=/TZID=([^;:]+)/.exec(meta)?.[1]||"";
+   if(["DTSTART","SUMMARY","STATUS","RRULE"].includes(key))entry[key]=line.slice(p+1);
+  }}
  }
  output.sort((a,b)=>a.date.localeCompare(b.date)||a.title.localeCompare(b.title));
  return {events:output.slice(0,400),unsupported};
