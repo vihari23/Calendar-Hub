@@ -29,3 +29,13 @@ There is no native iOS Home Screen **widget** or Apple Calendar control; this is
 ## App icon maintenance
 
 The installed app icon has one source of truth: `static/icon-source.png` (an optimized rendering of the original design). The standard-library script `scripts/icon_render.py` generates the 180px Apple touch icon and 192px/512px manifest icons on every publish. No third-party image tooling is needed. The browser favicon uses the generated 192px PNG. Changes to `static/sw.js` use a versioned cache identifier so installed apps refresh their offline assets.
+
+## iPhone Home Screen widgets (Scriptable)
+
+The Hub now publishes a **true iPhone Home Screen widget** through Scriptable, using `scriptable/CalendarHubWidget.js`. Open https://vihari23.github.io/Calendar-Hub/widget-setup.html on your iPhone in Safari for the copy/install guide.
+
+When run normally in Scriptable, the widget script exposes **Manage calendars + colors** (add custom HTTPS ICS subscriptions, assign colors, rename and remove) and **Manage widget views** (select calendars independently for each named widget view). All custom ICS URLs/settings are stored **locally on the iPhone**. Built-in feeds use the Hub's public `widget.json`; custom ICS feeds are downloaded directly by your iPhone, with a 90-minute on-device cache and offline fallback.
+
+To place widgets: Home Screen → ＋ → Scriptable → Medium/Large → Edit Widget → select the script → enter a view ID such as `all`, `culture`, `entertainment`, or `home` in **Parameter**. Add multiple widgets with different parameters. Tapping a widget opens a scrollable on-device agenda.
+
+The widget is **not a custom native iOS app extension**; it relies on Scriptable, and iOS ultimately controls refresh frequency. Complex RRULEs and time-zone rules in arbitrary external ICS feeds may require using Apple Calendar for authoritative date rendering. Private calendar URLs never appear in the public Hub.

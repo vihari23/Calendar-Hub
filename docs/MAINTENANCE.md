@@ -36,3 +36,11 @@ The service worker caches the HTML shell for **offline fallback only**; online n
 ## App icon refresh
 
 The single source asset is `static/icon-source.png`, a 96px indexed PNG. For a new design, replace that source with the same optimized format; `scripts/icon_render.py` creates the 180px, 192px and 512px images in `dist/` during publishing. Use `python -m unittest discover -s tests -v` to check generated icon dimensions and PNG validity. The app manifest and Apple touch link reference the generated files. Increment `CACHE` in `static/sw.js` whenever those assets change. Home Screen icons may remain cached by iOS; removing and adding the icon again can force the new artwork.
+
+## Scriptable widget maintenance
+
+Scriptable widget source: `scriptable/CalendarHubWidget.js`, published as `CalendarHubWidget.js` by the Hub build. Installation guide: `static/widget-setup.html`. The public compact feed: `dist/widget.json` (only existing public calendar content).
+
+Widget configuration (colors, custom ICS URLs and per-widget selections) is **not stored on GitHub**. Scriptable stores it locally on the iPhone with its `FileManager.local().libraryDirectory()` API. Its `all` preset can be modified without changing the independent `entertainment`, `home` and `culture` presets.
+
+After widget code changes, run `node --input-type=module --check < scriptable/CalendarHubWidget.js` and `node tests/test_scriptable.mjs` alongside the Python tests. GitHub Actions runs these checks on every publish or PR. If a custom ICS is failing, open Scriptable → Calendar Hub Widget → Manage calendars + colors → select calendar → Test calendar feed. Use Apple Calendar if its recurrence/timezone rules exceed this widget's supported parser.
