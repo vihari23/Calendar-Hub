@@ -225,6 +225,20 @@ def build(config,output,now=None,getter=download):
     output=Path(output)
     output.mkdir(parents=True,exist_ok=True)
     (output/"status.json").write_text(json.dumps(report,indent=2,ensure_ascii=False)+"\n",encoding="utf8")
+    # Compact public event data for the iPhone widget; no private URLs or personal calendars.
+    today=now.astimezone(PHOENIX).date()
+    through=today+timedelta(days=90)
+    widget_data={
+        "schema_version":1,
+        "checked_at_utc":now.isoformat(),
+        "timezone":"America/Phoenix",
+        "feeds":[{
+            "id":feed["id"],"name":feed["name"],"status":feed["status"],
+            "upcoming":[{"date":e["date"],"name":e["name"]} for e in feed["upcoming"]
+                        if today<=date.fromisoformat(e["date"])<=through][:160]
+        } for feed in report["feeds"]]
+    }
+    (output/"widget.json").write_text(json.dumps(widget_data,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf8")
     (output/"index.html").write_text(dashboard(cfg,report),encoding="utf8")
     # Keep PWA assets in one tracked directory so Pages and local builds match.
     assets=Path(__file__).resolve().parents[1]/"static"
