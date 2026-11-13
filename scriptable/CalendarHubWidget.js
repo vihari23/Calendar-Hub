@@ -19,8 +19,8 @@ const DEFAULT_FEEDS=[
  {id:"bulk_trash",name:"Arizona Bulk Trash",kind:"hub",color:"#73E0C1"}
 ];
 const INITIAL_VIEWS=[
- {id:"all",name:"All Subscribed Calendars",feeds:["panchangam","india_ott","bulk_trash"]},
- {id:"culture",name:"Panchangam",feeds:["panchangam"]},
+ {id:"all",name:"All Subscribed Calendars",feeds:["panchangam","india_ott","bulk_trash"],dailyPanchangam:false},
+ {id:"culture",name:"Panchangam",feeds:["panchangam"],dailyPanchangam:true},
  {id:"entertainment",name:"India OTT",feeds:["india_ott"]},
  {id:"home",name:"Home & Trash",feeds:["bulk_trash"]}
 ];
@@ -31,7 +31,7 @@ function readJSON(path,fallback){
 }
 function defaults(){
  return {version:1,feeds:DEFAULT_FEEDS.map(f=>Object.assign({},f)),
-  views:INITIAL_VIEWS.map(v=>({id:v.id,name:v.name,feeds:v.feeds.slice()}))};
+  views:INITIAL_VIEWS.map(v=>({id:v.id,name:v.name,feeds:v.feeds.slice(),dailyPanchangam:!!v.dailyPanchangam}))};
 }
 function saveSettings(s){FM.writeString(SETTINGS,JSON.stringify(s,null,2));}
 function loadSettings(){
@@ -50,10 +50,12 @@ function cleanHex(value){
 }
 function safeURL(text){
  try{
-  const u=new URL(String(text).trim());
-  if(u.protocol!=="https:"||!u.hostname||u.username||u.password) return null;
-  if(u.hostname==="localhost"||u.hostname.endsWith(".local")||/^(127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname))return null;
-  return u.href;
+  const value=String(text).trim().replace(/^webcal:\/\//i,"https://");
+  const m=/^https:\/\/([^\/?#]+)(?:[\/?#]|$)/i.exec(value);
+  if(!m||m[1].includes("@"))return null;
+  const host=m[1].split(":")[0].toLowerCase();
+  if(host==="localhost"||host.endsWith(".local")||/^(127\.|10\.|192\.168\.|169\.254\.)/.test(host))return null;
+  return value;
  }catch(e){return null;}
 }
 function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,26)||"calendar";}
@@ -208,13 +210,19 @@ async function addFeed(s){
 }
 async function editFeed(s,index){
  const f=s.feeds[index];if(!f)return;
- const choice=await choose(f.name,[ "Rename",f.kind==="ics"?"Change ICS URL":"Source: public Calendar Hub","Change calendar color","Remove calendar"]);
+ const choice=await choose(f.name,[ "Rename",f.kind==="ics"?"Change ICS URL":"Source: public Calendar Hub","Change calendar color","Test calendar feed","Remove calendar"]);
  if(choice<0)return;
  if(choice===0){const v=await fields("Rename calendar",["Calendar name"],[f.name]);if(v&&v[0])f.name=v[0];}
  if(choice===1&&f.kind==="ics"){const v=await fields("Change ICS URL",["HTTPS ICS URL"],[f.url]);if(v){const url=safeURL(v[0]);if(url)f.url=url;else await alert("Invalid URL","Use a valid HTTPS URL.");}}
  if(choice===1&&f.kind!=="ics")await alert("Built-in calendar","This feed is monitored by Calendar Hub. Its ICS source can be changed in the GitHub Hub configuration.");
  if(choice===2){const c=await pickColor(f.color);if(c)f.color=c;}
  if(choice===3){
+  if(f.kind==="ics"){
+   const result=await readICS(f,{custom:{}},true);
+   await alert(result.healthy?"Feed works":"Feed check failed",result.healthy?(result.events.length+" upcoming events found."):(result.error||"Unable to read this ICS URL."));
+  }else await alert("Hub feed","The source is monitored by the public Calendar Hub.");
+ }
+ if(choice===4){
   const i=await choose("Remove "+f.name+"?",["Remove this calendar"]);
   if(i===0){s.feeds.splice(index,1);for(const v of s.views)v.feeds=v.feeds.filter(x=>x!==f.id);}
  }
@@ -231,7 +239,7 @@ async function editView(s,index){
  let view=s.views[index];
  if(!view)return;
  while(true){
-  const options=["Rename this widget view","Delete this widget view"].concat(
+  const options=["Rename this widget view","Delete this widget view",view.dailyPanchangam?"✓ Show daily Panchangam entries":"○ Show daily Panchangam entries"].concat(
    s.feeds.map(f=>(view.feeds.includes(f.id)?"✓  ":"○  ")+f.name));
   const i=await choose("View: "+view.name+" ("+view.id+")",options);
   if(i<0)return;
@@ -239,8 +247,9 @@ async function editView(s,index){
   else if(i===1){
    if(view.id==="all"){await alert("Default view","The all view cannot be deleted. You may still select its calendars.");}
    else if(await choose("Delete view "+view.id+"?",["Delete view"])===0){s.views.splice(index,1);saveSettings(s);return;}
+  }else if(i===2){view.dailyPanchangam=!view.dailyPanchangam;
   }else{
-   const id=s.feeds[i-2].id;
+   const id=s.feeds[i-3].id;
    view.feeds=view.feeds.includes(id)?view.feeds.filter(f=>f!==id):view.feeds.concat(id);
   }
   saveSettings(s);
@@ -255,7 +264,7 @@ async function manageViews(s){
    if(!x)return;
    const id=slug(x[1]);
    if(!x[0]||s.views.some(v=>v.id===id)){await alert("Invalid view","Choose a name and unique widget parameter.");continue;}
-   s.views.push({id,name:x[0],feeds:[]});saveSettings(s);
+   s.views.push({id,name:x[0],feeds:[],dailyPanchangam:false});saveSettings(s);
    await editView(s,s.views.length-1);
   }else await editView(s,idx-1);
  }
@@ -309,6 +318,7 @@ async function loadEvents(s,v,force){
    info=item.events;
   }
   if(info)for(const e of info){
+   if(f.id==="panchangam"&&!v.dailyPanchangam&&!isNotablePanchangam(e&&e.name))continue;
    if(e&&typeof e.date==="string"&&e.date>=todayPhoenix()&&e.name)
     events.push({id:f.id,date:e.date,name:String(e.name),color:f.color,calendar:f.name});
   }
@@ -318,6 +328,9 @@ async function loadEvents(s,v,force){
  events.sort((a,b)=>a.date.localeCompare(b.date)||a.calendar.localeCompare(b.calendar)||a.name.localeCompare(b.name));
  FM.writeString(CACHE,JSON.stringify(cache));
  return {events,statuses,feeds};
+}
+function isNotablePanchangam(text){
+ return /🪔|⚡|🌕|🌑|ekadashi|amavasya|pournami|purnima|festival|sankranti|navaratri|diwali|deepavali|ugadi|dasara|shashti|chavithi|ashtami|shivaratri/i.test(String(text||""));
 }
 function prettyTitle(s){
  return String(s||"").replace(/^OTT:\s*/i,"").replace(/\s*[—–]\s*/g," — ").trim();
@@ -332,7 +345,8 @@ function buildWidget(view,data,family){
  gradient.colors=[new Color("#081631"),new Color("#193765"),new Color("#075C64")];
  gradient.locations=[0,0.55,1];
  w.backgroundGradient=gradient;w.setPadding(13,13,11,13);
- w.url=URLScheme.forRunningScript()+"?view="+encodeURIComponent(view.id);
+ const runUrl=URLScheme.forRunningScript();
+ w.url=runUrl+(runUrl.includes("?")?"&":"?")+"view="+encodeURIComponent(view.id);
  w.refreshAfterDate=new Date(Date.now()+60*60000);
  const head=w.addStack();head.centerAlignContent();
  const label=head.addText("✦  "+view.name.toUpperCase());styleText(label,10,"#FFE2A1",true);
