@@ -251,12 +251,15 @@ def build(config,output,now=None,getter=download):
     render_icons(assets/"icon-source.png",output)
     # Fully self-contained Scripting widget project for direct iPhone import.
     scripting=Path(__file__).resolve().parents[1]/"scripting"
-    with ZipFile(output/"CalendarHubFullPage.zip","w",compression=ZIP_DEFLATED,compresslevel=8) as package:
-        for name in ("script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"):
-            source=scripting/name
-            if not source.is_file():
-                raise FileNotFoundError(f"Missing full-page widget source: {source}")
-            package.write(source,arcname=name)
+    # Publish both a standard ZIP for inspection and the iOS-associated .scripting archive.
+    # The two packages have identical root-level entries (no nesting).
+    for archive_name in ("CalendarHubFullPage.zip","CalendarHubFullPage.scripting"):
+        with ZipFile(output/archive_name,"w",compression=ZIP_DEFLATED,compresslevel=8) as package:
+            for name in ("script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"):
+                source=scripting/name
+                if not source.is_file():
+                    raise FileNotFoundError(f"Missing full-page widget source: {source}")
+                package.write(source,arcname=name)
     shutil.copyfile(Path(__file__).resolve().parents[1]/"scriptable"/"CalendarHubWidget.js",output/"CalendarHubWidget.js")
     for f in report["feeds"]:
         print(f'{f["name"]}: {f["status"]} ({f["events"]} events) - {f["detail"]}')

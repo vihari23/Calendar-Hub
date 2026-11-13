@@ -50,12 +50,18 @@ class MonitorTests(unittest.TestCase):
             self.assertIn("Test event",(p/"site"/"index.html").read_text())
             from zipfile import ZipFile
             archive=p/"site"/"CalendarHubFullPage.zip"
-            with ZipFile(archive) as bundle:
-                self.assertEqual(set(bundle.namelist()),{
-                    "script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"})
-                self.assertEqual(json.loads(bundle.read("script.json"))["name"],"Vihari Calendar Hub Full Page")
-                self.assertIn(b"systemExtraLargePortrait",bundle.read("widget.tsx"))
-                self.assertIn(b"appGroupDocumentsDirectory",bundle.read("settings.ts"))
+            for archive in (p/"site"/"CalendarHubFullPage.zip",p/"site"/"CalendarHubFullPage.scripting"):
+                with ZipFile(archive) as bundle:
+                    self.assertIsNone(bundle.testzip())
+                    self.assertEqual(set(bundle.namelist()),{
+                        "script.json","index.tsx","widget.tsx","core.ts","settings.ts","README.md"})
+                    self.assertEqual(json.loads(bundle.read("script.json"))["name"],"Vihari Calendar Hub Full Page")
+                    self.assertIn(b"systemExtraLargePortrait",bundle.read("widget.tsx"))
+                    self.assertIn(b"appGroupDocumentsDirectory",bundle.read("settings.ts"))
+            install_page=(p/"site"/"full-page-widget.html").read_text()
+            self.assertIn("scripting.fun/import_scripts?urls=",install_page)
+            self.assertIn("github.com/vihari23/Calendar-Hub/tree/main/scripting",install_page)
+            self.assertIn("CalendarHubFullPage.scripting",install_page)
             widget=json.loads((p/"site"/"widget.json").read_text())
             self.assertEqual(widget["schema_version"],1)
             self.assertEqual(len(widget["feeds"]),1)

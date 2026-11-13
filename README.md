@@ -45,3 +45,5 @@ The widget is **not a custom native iOS app extension**; it relies on Scriptable
 ## Full-page iPhone widget (iOS 27+)
 
 A separate [Scripting full-page portrait widget](scripting/README.md) is available. Download the generated [importable project ZIP](https://vihari23.github.io/Calendar-Hub/CalendarHubFullPage.zip) or import the project from `https://github.com/vihari23/Calendar-Hub/tree/main/scripting` in the Scripting iPhone app. Installation is device-dependent: desktop tests passing does not verify actual iPhone rendering.
+
+**Easier import (no ZIP):** [One-tap Scripting remote import](https://scripting.fun/import_scripts?urls=%5B%22https%3A%2F%2Fgithub.com%2Fvihari23%2FCalendar-Hub%2Ftree%2Fmain%2Fscripting%22%5D) or download [CalendarHubFullPage.scripting](https://vihari23.github.io/Calendar-Hub/CalendarHubFullPage.scripting). The regular ZIP is retained for advanced inspection and remote import by URL; avoid relying on the iOS file picker to treat it as a Scripting script.
