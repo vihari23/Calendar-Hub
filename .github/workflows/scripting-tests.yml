@@ -1,0 +1,29 @@
+name: Full Page iPhone Widget Validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripting/**'
+      - 'tests/test_scripting.cjs'
+      - '.github/workflows/scripting-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripting/**'
+      - 'tests/test_scripting.cjs'
+      - '.github/workflows/scripting-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install TypeScript for independent tests
+        run: npm install --no-save --no-audit --no-fund --prefix /tmp/calendar-hub-ts typescript@5.9.3
+      - name: Test TSX syntax, calendar ICS parser, privacy constraints, selectors, colors, full-page row count
+        run: node tests/test_scripting.cjs
