@@ -11,7 +11,7 @@ async function runScenario(family,parameter,fixture){
  Script:{exit:()=>{paths.exited=true}},
  HStack:'HStack',VStack:'VStack',Text:'Text',Spacer:'Spacer',Link:'Link'
  };
- const publicData={checked_at_utc:new Date().toISOString(),feeds:[{id:'panchangam',status:'healthy',upcoming:[]},
+ const publicData={schema_version:1,checked_at_utc:new Date().toISOString(),feeds:[{id:'panchangam',status:'healthy',upcoming:[]},
  {id:'india_ott',status:'healthy',upcoming:Array.from({length:18},(_,i)=>({date:new Date(Date.now()+i*86400000).toISOString().slice(0,10),name:'OTT: Movie '+i}))},
  {id:'bulk_trash',status:'healthy',upcoming:[]}]};
  if(fixture)files.set('/privategroup/vihari-hub-xl-settings-v1.json',JSON.stringify(fixture));
