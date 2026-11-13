@@ -1,6 +1,6 @@
-/* Calendar Hub v1: cache only the app shell; online navigations are always network-first. */
-const CACHE = "calendar-hub-shell-v1";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
+/* Calendar Hub v2: cache only the app shell; online navigations are always network-first. */
+const CACHE = "calendar-hub-shell-v2";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });

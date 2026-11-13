@@ -32,3 +32,7 @@ The job runs daily at **16:30 UTC = 9:30 AM Phoenix**, with timing subject to Gi
 The PWA source files live in `static/`. When you change app design or assets, keep `static/manifest.webmanifest`, the three PNG icons and `static/sw.js` together; `scripts/build.py` copies them to `dist/`. Bump the service worker `CACHE` identifier to invalidate old shell assets. To test, open the site in Safari on an iPhone and use **Share → Add to Home Screen**. The app launches in standalone mode; it is not a Home Screen widget.
 
 The service worker caches the HTML shell for **offline fallback only**; online navigation fetches a fresh dashboard. It does not cache `status.json`. Offline data is visibly labeled as a potentially outdated snapshot.
+
+## App icon refresh
+
+The single source asset is `static/icon-source.png`, a 96px indexed PNG. For a new design, replace that source with the same optimized format; `scripts/icon_render.py` creates the 180px, 192px and 512px images in `dist/` during publishing. Use `python -m unittest discover -s tests -v` to check generated icon dimensions and PNG validity. The app manifest and Apple touch link reference the generated files. Increment `CACHE` in `static/sw.js` whenever those assets change. Home Screen icons may remain cached by iOS; removing and adding the icon again can force the new artwork.

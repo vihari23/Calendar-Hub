@@ -25,3 +25,7 @@ Calendar Hub is a lightweight Progressive Web App (PWA), not an App Store app. O
 The `static/` directory contains the manifest, service worker and icons. The generator copies these assets into the published site. Offline viewing shows the last cached dashboard with a clear warning; the `status.json` health report is **not** cached. To update the PWA's cached asset bundle after changing the app shell, increment the `CACHE` version in `static/sw.js`.
 
 There is no native iOS Home Screen **widget** or Apple Calendar control; this is a standalone Home Screen app icon linked to the dashboard.
+
+## App icon maintenance
+
+The installed app icon has one source of truth: `static/icon-source.png` (an optimized rendering of the original design). The standard-library script `scripts/icon_render.py` generates the 180px Apple touch icon and 192px/512px manifest icons on every publish. No third-party image tooling is needed. The browser favicon uses the generated 192px PNG. Changes to `static/sw.js` use a versioned cache identifier so installed apps refresh their offline assets.

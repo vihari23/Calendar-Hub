@@ -61,11 +61,20 @@ class MonitorTests(unittest.TestCase):
             self.assertEqual(len(manifest["icons"]),2)
             for name in ("icon-192.png","icon-512.png","apple-touch-icon.png"):
                 self.assertTrue((p/"site"/name).read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
-            self.assertIn('CACHE = "calendar-hub-shell-v1"',(p/"site"/"sw.js").read_text())
+                import struct
+                dimension=struct.unpack(">II",(p/"site"/name).read_bytes()[16:24])
+                self.assertEqual(dimension,(int(name.split("-")[1].split(".")[0]) if name.startswith("icon-") else 180,)*2)
+            self.assertIn('CACHE = "calendar-hub-shell-v2"',(p/"site"/"sw.js").read_text())
     def test_pwa_has_no_private_feed_urls(self):
         app=Path("static/manifest.webmanifest").read_text()
         self.assertNotIn("Personal Important Dates",app)
         self.assertNotIn("Calendar-Hub/status.json",Path("static/sw.js").read_text())
+    def test_icon_source_is_valid(self):
+        from scripts.icon_render import _decode_indexed_png
+        width,height,pixels=_decode_indexed_png(Path("static/icon-source.png"))
+        self.assertEqual((width,height),(96,96))
+        self.assertEqual(len(pixels),96)
+
     def test_valid_config(self):
         load_config(Path("config/feeds.json"))
     def test_blocks_http(self):
