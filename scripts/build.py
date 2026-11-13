@@ -106,10 +106,8 @@ def parse_calendar(raw,now,min_events):
         s=e.get("DTSTAMP","")
         if STAMP_RE.fullmatch(s):
             stamps.append(datetime.strptime(s,"%Y%m%dT%H%M%SZ").replace(tzinfo=UTC))
-    if not stamps:
-        raise ValueError("No valid event generation timestamp")
-    latest=max(stamps)
-    if latest>now+timedelta(hours=12):
+    latest=max(stamps) if stamps else None
+    if latest and latest>now+timedelta(hours=12):
         raise ValueError("Feed generation timestamp is in the future")
     window_end=(now+timedelta(days=365)).astimezone(PHOENIX).date()
     today=now.astimezone(PHOENIX).date()
@@ -120,8 +118,9 @@ def parse_calendar(raw,now,min_events):
             title=(e["SUMMARY"].replace("\\n"," ").replace("\\N"," ").replace("\\, ",", ").replace("\\,",",").replace("\\;",";").replace("\\\\","\\"))
             upcoming.append({"date":d.date().isoformat(),"start":d.isoformat(),"name":title})
     upcoming.sort(key=lambda x:(x["start"],x["name"]))
-    return {"events":len(evs),"last_generated_utc":latest.isoformat(),
-            "age_hours":round((now-latest).total_seconds()/3600,1),"upcoming":upcoming}
+    return {"events":len(evs),"last_generated_utc":latest.isoformat() if latest else None,
+            "age_hours":round((now-latest).total_seconds()/3600,1) if latest else None,
+            "upcoming":upcoming}
 
 def download(url):
     req=Request(url,headers={"User-Agent":"VihariCalendarHub/1.0","Accept":"text/calendar,text/plain,*/*"})
@@ -133,7 +132,30 @@ def download(url):
         raise ValueError("Download exceeds 3 MB")
     return data
 
-def check_feed(f,now,getter=download):
+def recent_successful_publication(repo_url):
+    """Fallback for calendars without DTSTAMP: last successful public Actions run.
+
+    This establishes recent publication activity, not a verified per-event timestamp.
+    """
+    parsed=urlsplit(repo_url)
+    parts=parsed.path.strip("/").split("/")
+    if parsed.scheme!="https" or parsed.hostname!="github.com" or len(parts)!=2 or not all(parts):
+        raise ValueError("GitHub source repository URL invalid")
+    api=f"https://api.github.com/repos/{parts[0]}/{parts[1]}/actions/runs?per_page=30&status=success"
+    req=Request(api,headers={"User-Agent":"VihariCalendarHub/1.0","Accept":"application/vnd.github+json"})
+    with urlopen(req,timeout=20) as response:
+        data=json.load(response)
+    successful=[]
+    for run in data.get("workflow_runs",[]):
+        if run.get("conclusion")=="success" and run.get("status")=="completed":
+            stamp=run.get("updated_at")
+            if stamp:
+                successful.append(datetime.fromisoformat(stamp.replace("Z","+00:00")))
+    if not successful:
+        raise ValueError("No completed successful GitHub Actions runs found")
+    return max(successful)
+
+def check_feed(f,now,getter=download,publish_getter=recent_successful_publication):
     result={k:f[k] for k in ("id","name","description","kind","url","source_repository","expected_update")}
     result.update(status="unverified",detail="Not checked",events=0,upcoming=[],checked_at_utc=now.isoformat())
     if not f["enabled"]:
@@ -142,8 +164,20 @@ def check_feed(f,now,getter=download):
     try:
         found=parse_calendar(getter(f["url"]),now,f["min_events"])
         result.update(found)
-        result.update(status=("stale" if found["age_hours"]>f["max_age_hours"] else "healthy"),
-                      detail=("Generation timestamp older than configured threshold" if found["age_hours"]>f["max_age_hours"] else "Download, structure and generation freshness verified"))
+        if found["age_hours"] is None:
+            published=publish_getter(f["source_repository"])
+            age=round((now-published).total_seconds()/3600,1)
+            if age < -12:
+                raise ValueError("GitHub publication timestamp is in the future")
+            result.update(last_generated_utc=None,last_published_utc=published.isoformat(),
+                          age_hours=age,freshness_basis="github_actions_success")
+            detail="ICS validated; freshness inferred from latest successful GitHub Actions publication (no valid event DTSTAMP)"
+        else:
+            age=found["age_hours"]
+            result.update(freshness_basis="ics_dtstamp")
+            detail="ICS validated; event generation timestamp verified"
+        result.update(status=("stale" if age>f["max_age_hours"] else "healthy"),
+                      detail=("Feed publication/generation is older than configured threshold" if age>f["max_age_hours"] else detail))
     except Exception as exc:
         result.update(status="error",detail=str(exc)[:220])
     return result
@@ -156,7 +190,7 @@ def dashboard(cfg,status):
     today=datetime.fromisoformat(status["checked_at_utc"]).astimezone(PHOENIX).date()
     horizon=today+timedelta(days=cfg["look_ahead_days"])
     for f in readings:
-        cards.append('<article data-feed="'+safe(f["id"])+'"><div class="top"><span>'+safe(f["kind"])+'</span><strong class="'+safe(f["status"])+'">'+safe(f["status"])+'</strong></div><h2>'+safe(f["name"])+'</h2><p>'+safe(f["description"])+'</p><p class="quiet">'+safe(f["detail"])+'</p><dl><dt>Events</dt><dd>'+str(f["events"])+'</dd><dt>Last generation</dt><dd>'+safe(str(f.get("age_hours","unknown"))+" hours ago")+'</dd></dl><p><a href="'+safe(f["url"])+'">Subscription ICS</a> · <a href="'+safe(f["source_repository"])+'">Source repository</a></p></article>')
+        cards.append('<article data-feed="'+safe(f["id"])+'"><div class="top"><span>'+safe(f["kind"])+'</span><strong class="'+safe(f["status"])+'">'+safe(f["status"])+'</strong></div><h2>'+safe(f["name"])+'</h2><p>'+safe(f["description"])+'</p><p class="quiet">'+safe(f["detail"])+'</p><dl><dt>Events</dt><dd>'+str(f["events"])+'</dd><dt>Last generation / publication</dt><dd>'+safe(str(f.get("age_hours","unknown"))+" hours ago")+'</dd></dl><p><a href="'+safe(f["url"])+'">Subscription ICS</a> · <a href="'+safe(f["source_repository"])+'">Source repository</a></p></article>')
         for e in f["upcoming"]:
             if today<=date.fromisoformat(e["date"])<=horizon:
                 agenda.append((e["start"],f["id"],f["name"],e))
