@@ -49,6 +49,23 @@ class MonitorTests(unittest.TestCase):
             self.assertTrue(status["healthy"])
             self.assertIn("Test event",(p/"site"/"index.html").read_text())
             self.assertTrue((p/"site"/"status.json").exists())
+            html=(p/"site"/"index.html").read_text(encoding="utf8")
+            self.assertIn('href="./manifest.webmanifest"',html)
+            self.assertIn('rel="apple-touch-icon"',html)
+            self.assertIn('serviceWorker.register("./sw.js"',html)
+            self.assertIn('Offline',html)
+            manifest=json.loads((p/"site"/"manifest.webmanifest").read_text())
+            self.assertEqual(manifest["display"],"standalone")
+            self.assertEqual(manifest["start_url"],"./")
+            self.assertEqual(manifest["scope"],"./")
+            self.assertEqual(len(manifest["icons"]),2)
+            for name in ("icon-192.png","icon-512.png","apple-touch-icon.png"):
+                self.assertTrue((p/"site"/name).read_bytes().startswith(b"\x89PNG\r\n\x1a\n"))
+            self.assertIn('CACHE = "calendar-hub-shell-v1"',(p/"site"/"sw.js").read_text())
+    def test_pwa_has_no_private_feed_urls(self):
+        app=Path("static/manifest.webmanifest").read_text()
+        self.assertNotIn("Personal Important Dates",app)
+        self.assertNotIn("Calendar-Hub/status.json",Path("static/sw.js").read_text())
     def test_valid_config(self):
         load_config(Path("config/feeds.json"))
     def test_blocks_http(self):

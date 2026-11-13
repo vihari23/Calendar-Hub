@@ -26,3 +26,9 @@ To roll back an erroneous hub change, use GitHub's Revert on the commit or resto
 The health report includes public event titles only. Personal Important Dates and private family events are excluded. The site's calendar checkboxes filter the website only, not the Apple Calendar app.
 
 The job runs daily at **16:30 UTC = 9:30 AM Phoenix**, with timing subject to GitHub Actions delays. It will alert via GitHub workflow notifications if a source fails and notifications are enabled.
+
+## PWA and iOS installation
+
+The PWA source files live in `static/`. When you change app design or assets, keep `static/manifest.webmanifest`, the three PNG icons and `static/sw.js` together; `scripts/build.py` copies them to `dist/`. Bump the service worker `CACHE` identifier to invalidate old shell assets. To test, open the site in Safari on an iPhone and use **Share → Add to Home Screen**. The app launches in standalone mode; it is not a Home Screen widget.
+
+The service worker caches the HTML shell for **offline fallback only**; online navigation fetches a fresh dashboard. It does not cache `status.json`. Offline data is visibly labeled as a potentially outdated snapshot.
