@@ -26,7 +26,7 @@ def _audit_telugu_source(src, now, scanner):
 
 def audit_telugu(sources, now, scanner=scan_source):
     """Scan every registered source, including previously manual-only directories."""
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:
         rows=list(pool.map(lambda src: _audit_telugu_source(src,now,scanner),sources))
     findings=[]
     for item in rows:

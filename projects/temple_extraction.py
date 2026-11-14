@@ -96,7 +96,7 @@ class Page(HTMLParser):
 
 def ocr_png(png):
     proc=subprocess.run(["tesseract","stdin","stdout","-l","eng","--psm","6"],
-                        input=png,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=22)
+                        input=png,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=40)
     if proc.returncode:
         raise ValueError("Tesseract OCR failed: "+proc.stderr.decode("utf-8","replace")[:130])
     return proc.stdout.decode("utf-8","replace")
@@ -107,7 +107,7 @@ def ocr_image(body):
         img.load()
         if img.width<250 or img.height<200:
             return "",False
-        img.thumbnail((2600,2600))
+        img.thumbnail((1800,1800))
         rgb=img.convert("RGB")
         output=io.BytesIO()
         rgb.save(output,format="PNG")
