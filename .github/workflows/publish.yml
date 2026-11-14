@@ -65,6 +65,51 @@ jobs:
       - name: Deploy Pages
         if: steps.pages_check.outputs.enabled == 'true'
         uses: actions/deploy-pages@v4
+      - name: Verify public ICS subscriptions and published Hub
+        if: steps.pages_check.outputs.enabled == 'true'
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          from datetime import datetime, timezone, timedelta
+          from urllib.request import Request, urlopen
+          root="https://vihari23.github.io/Calendar-Hub/"
+          expected=("arizona-telugu","phoenix-temples","workday-releases","phoenix-road-closures")
+          def fetch(name):
+              last=None
+              for attempt in range(10):
+                  try:
+                      request=Request(root+name+"?fresh=${{ github.sha }}",headers={"User-Agent":"CalendarHubValidation/1.0","Cache-Control":"no-cache"})
+                      with urlopen(request,timeout=18) as response:
+                          if response.status!=200:
+                              raise ValueError("HTTP "+str(response.status))
+                          return response.read(3_000_001)
+                  except Exception as exc:
+                      last=exc
+                      time.sleep(5)
+              raise RuntimeError(name+": failed public fetch: "+str(last))
+          status=json.loads(fetch("status.json"))
+          names={f["id"]:f for f in status["feeds"]}
+          assert len(names)==7 and all(slug in names for slug in expected),names
+          stamp=datetime.fromisoformat(status["checked_at_utc"])
+          assert datetime.now(timezone.utc)-stamp<timedelta(minutes=30),"Hub status is not from latest publication"
+          widget=json.loads(fetch("widget.json"))
+          assert {f["id"] for f in widget["feeds"]}==set(names)
+          source=json.loads(fetch("feeds/source-status.json"))
+          for slug in expected:
+              body=fetch("feeds/"+slug+".ics")
+              assert body.startswith(b"BEGIN:VCALENDAR\r\n"),slug+" missing calendar start"
+              assert body.endswith(b"END:VCALENDAR\r\n"),slug+" missing calendar end"
+              assert b"X-VIHARI-GENERATED-UTC:" in body,slug+" missing generation marker"
+              assert body.count(b"BEGIN:VEVENT")==body.count(b"END:VEVENT"),slug+" invalid event boundaries"
+              assert body.count(b"BEGIN:VEVENT")==names[slug]["events"],slug+" event count does not match published Hub"
+              assert body.count(b"BEGIN:VEVENT")==source[slug]["events"],slug+" event count does not match source report"
+              assert all(len(x)<=75 for x in body.split(b"\r\n")),slug+" ICS line exceeds 75 octets"
+              print(slug,"HTTP 200; RFC-style ICS boundaries valid; events",names[slug]["events"])
+          html=fetch("index.html").decode("utf-8")
+          assert all(names[slug]["name"] in html for slug in expected)
+          print("Public dashboard, seven feeds, widget, source diagnostics: verified")
+          PY
       - name: Fail if monitoring detected unhealthy sources
         run: |
           python - <<'PY'
