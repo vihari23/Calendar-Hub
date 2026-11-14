@@ -15,6 +15,11 @@
       "name": "Workday Release Center",
       "url": "https://doc.workday.com/",
       "import": "discovery"
+    },
+    {
+      "name": "Williams College Workday planned maintenance calendar",
+      "url": "https://hub.williams.edu/workday/workday-maintenance-calendar/",
+      "import": "discovery"
     }
   ],
   "events": [
@@ -26,6 +31,26 @@
       "url": "https://it.tamus.edu/workdayservices/news-and-updates/biannual-releases/biannual-workday-release-2026-r2/",
       "description": "Confirmed production release date. 2027 R1/R2 dates are not listed without official verification.",
       "source": "Workday release documentation and Texas A&M Workday Services"
+    },
+    {
+      "title": "Workday 2027 R1 — planned release (not globally confirmed)",
+      "start": "2027-03-13",
+      "end": "2027-03-14",
+      "location": "Workday platform (verify tenant-specific notices)",
+      "url": "https://hub.williams.edu/workday/workday-maintenance-calendar/",
+      "description": "Tentative. Williams College lists 2027 R1 feature release March 13, 2027. Workday Community must confirm exact global/tenant timing. Institution-specific maintenance windows are not universal.",
+      "source": "Williams College Workday Maintenance Calendar",
+      "tentative": true
+    },
+    {
+      "title": "Workday 2027 R2 — planned release (not globally confirmed)",
+      "start": "2027-09-11",
+      "end": "2027-09-12",
+      "location": "Workday platform (verify tenant-specific notices)",
+      "url": "https://hub.williams.edu/workday/workday-maintenance-calendar/",
+      "description": "Tentative. Williams College lists 2027 R2 feature release September 11, 2027. Workday Community must confirm exact global/tenant timing. Institution-specific maintenance windows are not universal.",
+      "source": "Williams College Workday Maintenance Calendar",
+      "tentative": true
     }
   ]
 }
