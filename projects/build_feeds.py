@@ -135,6 +135,42 @@ def auto_from_jsonld(url,kind):
                 continue
     return output
 
+
+def auto_from_ganapati(url,now):
+    """Parse the official temple's 'Nov 21 - Event' announcements conservatively."""
+    html=fetch(url)
+    parser=Collector();parser.feed(html)
+    content="\n".join(parser.lines)
+    # The announcements omit years, so only use them while the page explicitly
+    # identifies the same-year temple Panchangam; never roll stale events forward.
+    if not re.search(r"\b"+str(now.year)+r"\s+Panchangam\b",content,re.I):
+        raise ValueError("Cannot confirm calendar year from temple page")
+    patterns=[
+        ("Siva Annabhishekam","Maha Ganapati Temple — Siva Annabhishekam"),
+        ("Samuhika Satyanarayana Vratha & Tulasi Kota Puja",
+         "Maha Ganapati Temple — Samuhika Satyanarayana Vratha & Tulasi Kota Puja"),
+        ("Ayyappa Mandala Puja","Maha Ganapati Temple — Ayyappa Mandala Puja")
+    ]
+    output=[]
+    for event_text,title in patterns:
+        # Exclude page's general service list; require explicit month and day.
+        pattern=r"\b([A-Za-z]{3})\s+(\d{1,2})\s*[-–]\s*"+re.escape(event_text)
+        for match in re.finditer(pattern,content,re.I):
+            try:
+                month=datetime.strptime(match.group(1),"%b").month
+                when=date(now.year,month,int(match.group(2)))
+                if not now.date()<=when<=now.date()+timedelta(days=60):
+                    continue
+                output.append(normalize({
+                    "title":title,"start":when.isoformat(),
+                    "end":(when+timedelta(days=1)).isoformat(),
+                    "location":"Maha Ganapati Temple of Arizona, 51293 W Teel Rd, Maricopa, AZ 85139",
+                    "url":url,"description":"Date confirmed on temple's official events page. Time unpublished; verify before visiting. Maricopa City is outer metro.",
+                    "source":"Maha Ganapati Temple of Arizona"}))
+            except ValueError:
+                continue
+    return output
+
 def parse_adot(news_page,now):
     homepage=Collector();homepage.feed(news_page)
     path=next((h for h in homepage.links if "/news/adots-weekend-freeway-travel-advisory-" in h.lower()),None)
@@ -279,11 +315,17 @@ def build(out,now=None,network=True):
         discovered=0; errors=[]; attempted=0; accessible=0
         if network and slug in ("arizona-telugu","phoenix-temples"):
             for source in manifest["sources"]:
-                if source.get("import")!="jsonld":
+                importer=source.get("import")
+                if importer not in ("jsonld","ganapati_html"):
                     continue
                 attempted+=1
                 try:
-                    newer=auto_from_jsonld(source["url"],slug)
+                    if importer=="ganapati_html" and slug=="phoenix-temples":
+                        newer=auto_from_ganapati(source["url"],now)
+                    elif importer=="jsonld":
+                        newer=auto_from_jsonld(source["url"],slug)
+                    else:
+                        continue
                     events.extend(newer);discovered+=len(newer);accessible+=1
                 except Exception as exc:
                     errors.append(source["url"]+": "+str(exc)[:100])
