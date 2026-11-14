@@ -38,7 +38,7 @@ DATE_MONTH=re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+("+MONTH_RE+r")[,]?\s+(20\
 ISO_DATE=re.compile(r"\b(20\d{2})[-/](\d{1,2})[-/](\d{1,2})\b")
 US_DATE=re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](20\d{2})\b")
 ASSET_SUFFIX=re.compile(r"\.(?:pdf|png|jpe?g|webp)(?:$|\?)",re.I)
-KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang|whatsapp",re.I)
+KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang",re.I)
 SKIP=re.compile(r"(?:logo|icon|favicon|background|gopuram|gallery|galleryimage|banner-blank|headerbg)",re.I)
 
 def safe_url(base,url,source_host):
@@ -113,7 +113,7 @@ def ocr_image(body):
         rgb.save(output,format="PNG")
     return ocr_png(output.getvalue()),True
 
-def extract_pdf(body,full_ocr=False):
+def extract_pdf(body,full_ocr=True):
     if not body.startswith(b"%PDF"):
         raise ValueError("PDF signature mismatch")
     doc=fitz.open(stream=body,filetype="pdf")
@@ -163,19 +163,28 @@ def extract_candidates(text,now,origin,kind="html",max_days=180):
         context=" ".join(lines[max(0,i-1):min(len(lines),i+2)])[:500]
         if not SPECIAL.search(context) or RECURRING.search(context):
             continue
-        for d in explicit_dates(line):
-            if d<now.date() or d>now.date()+timedelta(days=max_days):continue
-            # A date in a footer or navigation may not be related to the event;
-            # do not auto-publish proximity-only matches.
-            match=SPECIAL.search(context)
-            title=context[match.start():match.end()+70].split(" | ")[0].strip(" :-,.")
-            title=re.sub(r"\s+"," ",title)[:105]
-            if len(title)<8:continue
-            key=(d.isoformat(),title.lower())
-            if key in seen:continue
-            seen.add(key)
-            out.append({"date":d.isoformat(),"title":title,"origin":origin,"kind":kind,
-                        "auto_publish":False,"reason":"Requires human confirmation of date-title association"})
+        found=[d for d in explicit_dates(line) if now.date()<=d<=now.date()+timedelta(days=max_days)]
+        match=SPECIAL.search(context)
+        if not match:continue
+        title=context[match.start():match.end()+70].split(" | ")[0].strip(" :-,.")
+        title=re.sub(r"\s+"," ",title)[:105]
+        if len(title)<8:continue
+        if found:
+            for d in found:
+                key=(d.isoformat(),title.lower())
+                if key in seen:continue
+                seen.add(key)
+                out.append({"date":d.isoformat(),"title":title,"origin":origin,"kind":kind,
+                            "auto_publish":False,"reason":"Requires human confirmation of date-title association"})
+        elif kind in ("pdf","image") and len(line)>12:
+            # Images often put the event name and month/year on different lines.
+            # Record the extracted title, but never infer missing dates.
+            key=(None,title.lower())
+            if key not in seen:
+                seen.add(key)
+                out.append({"date":None,"title":title,"origin":origin,"kind":kind,
+                            "auto_publish":False,
+                            "reason":"Event name extracted; exact date not established from image or PDF"})
     return out[:MAX_REVIEW_PER_SOURCE]
 
 def asset_candidates(items,base,source_host):
@@ -188,9 +197,10 @@ def asset_candidates(items,base,source_host):
         is_image=bool(re.search(r"\.(?:png|jpg|jpeg|webp)(?:$|/)",parsed.path,re.I)) or (
             "static.wixstatic.com" in (parsed.hostname or "") and "/media/" in parsed.path)
         if not(is_pdf or is_image):continue
-        score=(4 if is_pdf else 0)+len(KEYWORDS.findall(desc+" "+parsed.path.split("/")[-1]))
+        score=len(KEYWORDS.findall(desc+" "+parsed.path.split("/")[-1]))
         if SKIP.search(desc+" "+parsed.path.split("/")[-1]):score-=3
         if score<=0:continue
+        if re.search(r"/fill/w_(?:[1-9]|[1-9][0-9]),",parsed.path):continue
         old=possible.get(safe)
         if not old or old[0]<score:possible[safe]=(score,"pdf" if is_pdf else "image")
     assets=sorted(possible.items(),key=lambda x:(-x[1][0],x[0]))
@@ -205,7 +215,8 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None):
             "assets_checked":0,"candidate_count":0,"candidates":[],
             "warnings":[],"auto_published":0}
     try:
-        page,typ=fetcher(url,MAX_PAGE_BYTES)
+        main_limit=MAX_ASSET_BYTES if urlsplit(url).path.lower().endswith(".pdf") else MAX_PAGE_BYTES
+        page,typ=fetcher(url,main_limit)
         if typ=="application/pdf" or page.startswith(b"%PDF"):
             text,pages,ocr=extract_pdf(page)
             report["pdf_scanned"]+=1;report["pdf_pages_ocr"]+=ocr
