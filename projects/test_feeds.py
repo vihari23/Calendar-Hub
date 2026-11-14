@@ -67,6 +67,22 @@ class FeedTests(unittest.TestCase):
             result=auto_from_wzdx(datetime(2026,11,14,12,tzinfo=ZoneInfo("America/Phoenix")))
         self.assertEqual(len(result),1)
         self.assertIn("I-10",result[0]["title"])
+    def test_az511_wzdx_current_schema_top_level_dates_and_flags(self):
+        from unittest.mock import patch
+        from io import BytesIO
+        from projects.build_feeds import auto_from_wzdx
+        core={"road_names":["Loop 101"],"description":"Loop 101 full closure"}
+        props={"core_details":core,"vehicle_impact":"all-lanes-closed",
+               "start_date":"2026-11-15T03:00:00Z","end_date":"2026-11-16T11:00:00Z",
+               "is_start_date_verified":True,"is_end_date_verified":True}
+        item={"type":"Feature","properties":props,
+              "geometry":{"type":"LineString","coordinates":[[-112.2,33.5],[-112.19,33.5]]}}
+        payload=json.dumps({"type":"FeatureCollection","features":[item]}).encode()
+        with patch("projects.build_feeds.urlopen",return_value=BytesIO(payload)):
+            events=auto_from_wzdx(datetime(2026,11,14,12,tzinfo=ZoneInfo("America/Phoenix")))
+        self.assertEqual(len(events),1)
+        self.assertIn("Loop 101",events[0]["title"])
+
     def test_stable_event_ids(self):
         e=normalize({"title":"One","start":"2026-11-14","end":"2026-11-15"})
         a=ics("One","example",[e],datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
