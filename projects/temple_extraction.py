@@ -151,20 +151,21 @@ def explicit_dates(line):
         except ValueError:pass
     return list(dict.fromkeys(dates))
 
-def extract_candidates(text,now,origin,kind="html",max_days=180):
+def extract_candidates(text,now,origin,kind="html",max_days=180,topic_pattern=None):
     """Return candidate dates only where explicit YEAR and special-event wording coexist.
 
     No inherited year, no weekday-derived date, no recurrence expansion.
     """
+    pattern=topic_pattern or SPECIAL
     out=[];seen=set()
     lines=[re.sub(r"\s+"," ",x).strip() for x in text.splitlines() if x.strip()]
     for i,line in enumerate(lines):
         if len(line)>400:continue
         context=" ".join(lines[max(0,i-1):min(len(lines),i+2)])[:500]
-        if not SPECIAL.search(context) or RECURRING.search(context):
+        if not pattern.search(context) or RECURRING.search(context):
             continue
         found=[d for d in explicit_dates(line) if now.date()<=d<=now.date()+timedelta(days=max_days)]
-        match=SPECIAL.search(context)
+        match=pattern.search(context)
         if not match:continue
         title=context[match.start():match.end()+70].split(" | ")[0].strip(" :-,.")
         title=re.sub(r"\s+"," ",title)[:105]
@@ -208,7 +209,7 @@ def asset_candidates(items,base,source_host):
     images=[(url,t) for url,t in assets if t[1]=="image"][:MAX_IMAGE_ASSETS]
     return [(url,kind[1]) for url,kind in pdfs+images]
 
-def scan_source(source,now,fetcher=fetch_bytes,browser=None):
+def scan_source(source,now,fetcher=fetch_bytes,browser=None,topic_pattern=None):
     url=source["url"];host=urlsplit(url).hostname or ""
     report={"name":source["name"],"url":url,"status":"unverified","html_checked":False,
             "pdf_scanned":0,"pdf_pages_ocr":0,"images_ocr":0,"assets_found":0,
@@ -220,7 +221,7 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None):
         if typ=="application/pdf" or page.startswith(b"%PDF"):
             text,pages,ocr=extract_pdf(page)
             report["pdf_scanned"]+=1;report["pdf_pages_ocr"]+=ocr
-            report["candidates"]=extract_candidates(text,now,url,"pdf")
+            report["candidates"]=extract_candidates(text,now,url,"pdf",topic_pattern=topic_pattern)
             report["status"]="review_needed" if report["candidates"] else "no_verified_events"
             report["candidate_count"]=len(report["candidates"])
             return report
@@ -235,7 +236,7 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None):
             parser=Page();parser.feed(html)
             visible="\n".join(parser.text)
             report["browser_rendered"]=True
-        report["candidates"]=extract_candidates(visible,now,url,"html")
+        report["candidates"]=extract_candidates(visible,now,url,"html",topic_pattern=topic_pattern)
         candidates=asset_candidates(parser.items,url,host)
         # Sources with a directly linked PDF or image but generic filenames
         # should still get scanned when the anchor says 'Download calendar'.
@@ -256,7 +257,7 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None):
                 else:
                     report["warnings"].append("Asset unexpected content type: "+link[:180])
                     continue
-                report["candidates"]+=extract_candidates(text,now,link,kind)
+                report["candidates"]+=extract_candidates(text,now,link,kind,topic_pattern=topic_pattern)
             except Exception as e:
                 report["warnings"].append(kind+" "+link[:130]+": "+str(e)[:130])
         # Deduplicate and bound output size.
