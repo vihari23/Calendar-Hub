@@ -318,6 +318,25 @@ def build(out,now=None,network=True):
             events.append(normalize(event))
         discovered=0; errors=[]; attempted=0; accessible=0
         temple_audit=[]; temple_review=[]
+        telugu_audit=None; workday_audit=None; road_checks=[]
+        if network and slug=="arizona-telugu":
+            from projects.source_audits import audit_telugu
+            telugu_audit=audit_telugu(manifest["sources"],now)
+            (out/"telugu-review.json").write_text(
+                json.dumps(telugu_audit,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+            for x in telugu_audit["source_audits"]:
+                if x["status"] in ("error","blocked","partial"):
+                    errors.append("Telugu "+x["name"]+": "+("; ".join(x["warnings"]) or x["status"])[:150])
+        if network and slug=="workday-releases":
+            from projects.source_audits import audit_workday
+            workday_audit=audit_workday(manifest["sources"],manifest["events"],now)
+            (out/"workday-review.json").write_text(
+                json.dumps(workday_audit,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+            for x in workday_audit["source_audits"]:
+                if x["status"] not in ("accessible",):
+                    errors.append("Workday "+x["name"]+": "+("; ".join(x["warnings"]) or x["status"])[:150])
+            if workday_audit["date_differences"]:
+                errors.append("Workday institutional milestone dates differ from curated calendar; human review required")
         if network and slug=="phoenix-temples":
             from projects.temple_extraction import scan_source
             for src in manifest["sources"]:
