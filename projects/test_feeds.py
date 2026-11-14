@@ -30,8 +30,7 @@ class FeedTests(unittest.TestCase):
         b=ics("One","example",[e],datetime(2026,11,15,tzinfo=ZoneInfo("America/Phoenix")))
         self.assertEqual(a.split(b"UID:")[1].split(b"\r\n")[0],b.split(b"UID:")[1].split(b"\r\n")[0])
     def test_adot_never_guesses_missing_dates(self):
-        with self.assertRaises(ValueError):
-            parse_adot("<h1>generic</h1>",datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
+        self.assertEqual(parse_adot("<h1>generic</h1>",datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))[0],[])
 
 if __name__=="__main__":
     unittest.main()

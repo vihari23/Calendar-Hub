@@ -29,6 +29,10 @@ jobs:
           python -m unittest discover -s tests -v
           node --input-type=module --check < scriptable/CalendarHubWidget.js
           node tests/test_scriptable.mjs
+      - name: Build and validate four independent ICS feeds
+        run: |
+          python -m unittest projects.test_feeds -v
+          python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         run: python -m scripts.build --config config/feeds.json --out dist
       - name: Upload health report (even if checks fail)

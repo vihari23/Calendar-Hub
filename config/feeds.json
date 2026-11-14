@@ -38,6 +38,54 @@
       "max_age_hours": 72,
       "min_events": 1,
       "enabled": true
+    },
+    {
+      "id": "arizona-telugu",
+      "name": "Arizona Telugu Community Events",
+      "description": "Telugu and Telangana special cultural and family events",
+      "kind": "Community & culture",
+      "url": "https://vihari23.github.io/Calendar-Hub/feeds/arizona-telugu.ics",
+      "source_repository": "https://github.com/vihari23/Calendar-Hub",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 1,
+      "enabled": true
+    },
+    {
+      "id": "phoenix-temples",
+      "name": "Phoenix Metro Temple Special Events",
+      "description": "Confirmed special temple celebrations and ceremonies",
+      "kind": "Religious & culture",
+      "url": "https://vihari23.github.io/Calendar-Hub/feeds/phoenix-temples.ics",
+      "source_repository": "https://github.com/vihari23/Calendar-Hub",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 1,
+      "enabled": true
+    },
+    {
+      "id": "workday-releases",
+      "name": "Workday Confirmed Release Milestones",
+      "description": "Verified Workday production releases; no speculative future milestones",
+      "kind": "Technology & work",
+      "url": "https://vihari23.github.io/Calendar-Hub/feeds/workday-releases.ics",
+      "source_repository": "https://github.com/vihari23/Calendar-Hub",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 1,
+      "enabled": true
+    },
+    {
+      "id": "phoenix-road-closures",
+      "name": "Phoenix Metro ADOT Road Closures",
+      "description": "Official ADOT freeway closure advisories; verify live conditions",
+      "kind": "Transport & local",
+      "url": "https://vihari23.github.io/Calendar-Hub/feeds/phoenix-road-closures.ics",
+      "source_repository": "https://github.com/vihari23/Calendar-Hub",
+      "expected_update": "daily",
+      "max_age_hours": 72,
+      "min_events": 1,
+      "enabled": true
     }
   ]
 }

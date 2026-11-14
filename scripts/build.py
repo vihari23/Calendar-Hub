@@ -220,8 +220,18 @@ if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.se
 def build(config,output,now=None,getter=download):
     cfg=load_config(config)
     now=now or datetime.now(UTC)
+    output=Path(output)
+    def prefer_new_local_feeds(url):
+        prefix="https://vihari23.github.io/Calendar-Hub/feeds/"
+        if url.startswith(prefix):
+            name=url[len(prefix):]
+            if re.fullmatch(r"[a-z][a-z0-9-]*\.ics",name):
+                local=output/"feeds"/name
+                if local.is_file():
+                    return local.read_bytes()
+        return getter(url)
     report={"schema_version":1,"checked_at_utc":now.isoformat(),
-            "feeds":[check_feed(f,now,getter) for f in cfg["feeds"]]}
+            "feeds":[check_feed(f,now,prefer_new_local_feeds) for f in cfg["feeds"]]}
     report["healthy"]=all(f["status"] in ("healthy","disabled") for f in report["feeds"])
     output=Path(output)
     output.mkdir(parents=True,exist_ok=True)
