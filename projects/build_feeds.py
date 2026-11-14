@@ -413,10 +413,16 @@ def build(out,now=None,network=True):
         if not events:
             notes.append("No verified current or upcoming events; an empty ICS is intentional.")
         if slug=="workday-releases":
-            notes.append("Future Workday milestone dates are manually curated; no official public Workday release API is connected.")
+            notes.append("Future Workday milestones remain tentative; official authenticated Workday Community verification is not available.")
+            if workday_audit:
+                notes.append("Institution-published release dates cross-checked; differences appear in workday-review.json.")
         discovery=sum(x.get("import")=="discovery" for x in manifest["sources"])
-        if discovery:
+        if discovery and slug=="phoenix-temples":
             notes.append(str(discovery)+" directory sources are manual discovery references, not automatically extracted.")
+        if telugu_audit:
+            notes.append("All registered Telugu source pages checked with bounded HTML/PDF/flyer extraction; candidates require verification.")
+        if road_checks:
+            notes.append("Road source status is in road-audit.json; keyless AZ511 WZDx is the automatic fallback.")
         if network and slug in ("arizona-telugu","phoenix-temples") and not discovered:
             notes.append("Accessible event pages yielded no new qualifying structured events.")
         if slug=="phoenix-temples" and network:
@@ -432,16 +438,27 @@ def build(out,now=None,network=True):
                 "source_audits":temple_audit,
                 "candidates":temple_review[:120]
             },ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+        extended=(telugu_audit or workday_audit or None)
+        source_rows=(temple_audit if slug=="phoenix-temples" else
+                     extended["source_audits"] if extended else road_checks)
+        processed=(len(source_rows) if network and source_rows else attempted)
+        reachable=(sum(r["status"] not in ("blocked","error","unverified","incomplete") for r in source_rows)
+                   if network and source_rows else accessible)
+        pdf_count=sum(r.get("pdf_scanned",0) for r in source_rows)
+        pdf_ocr=sum(r.get("pdf_pages_ocr",0) for r in source_rows)
+        flyer_ocr=sum(r.get("images_ocr",0) for r in source_rows)
+        review_count=(len(telugu_audit["candidates"]) if telugu_audit else
+                      len(temple_review) if slug=="phoenix-temples" else
+                      len(workday_audit["date_differences"]) if workday_audit else 0)
         report[slug]={"events":content.count(b"BEGIN:VEVENT"),"auto_discovered":discovered,
-            "source_checks":(len(temple_audit) if slug=="phoenix-temples" and network else attempted),
-            "sources_accessible":(sum(r["status"] not in ("blocked","error","unverified") for r in temple_audit)
-                                  if slug=="phoenix-temples" and network else accessible),
+            "source_checks":processed,
+            "sources_accessible":reachable,
             "source_registry_total":len(manifest["sources"]),
-            "pdf_files_extracted":sum(r.get("pdf_scanned",0) for r in temple_audit),
-            "pdf_pages_ocr":sum(r.get("pdf_pages_ocr",0) for r in temple_audit),
-            "flyer_images_ocr":sum(r.get("images_ocr",0) for r in temple_audit),
-            "review_candidates":len(temple_review),
-            "manual_discovery_sources":discovery,
+            "pdf_files_extracted":pdf_count,
+            "pdf_pages_ocr":pdf_ocr,
+            "flyer_images_ocr":flyer_ocr,
+            "review_candidates":review_count,
+            "manual_discovery_sources":(0 if telugu_audit or workday_audit else discovery),
             "warnings":errors,"notes":notes,
             "generated_utc":now.astimezone(UTC).isoformat()}
         print(slug,report[slug])
