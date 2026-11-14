@@ -23,6 +23,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Install PDF and image extraction dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --requirement projects/requirements-temples.txt
+          if ! command -v tesseract >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq tesseract-ocr
+          fi
+          tesseract --version | head -n 1
       - name: Run regression tests
         run: |
           python -m compileall -q scripts tests
@@ -31,7 +39,7 @@ jobs:
           node tests/test_scriptable.mjs
       - name: Build and validate four independent ICS feeds
         run: |
-          python -m unittest projects.test_feeds -v
+          python -m unittest projects.test_feeds projects.test_temple_extraction -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         run: python -m scripts.build --config config/feeds.json --out dist
@@ -97,6 +105,11 @@ jobs:
           widget=json.loads(fetch("widget.json"))
           assert {f["id"] for f in widget["feeds"]}==set(names)
           source=json.loads(fetch("feeds/source-status.json"))
+          review=json.loads(fetch("feeds/temple-review.json"))
+          assert review["registered_sources"]>=10
+          assert len(review["source_audits"])==review["registered_sources"],"Not all temple sources audited"
+          assert review["requires_human_review"] is True
+          assert source["phoenix-temples"]["source_checks"]==review["registered_sources"]
           for slug in expected:
               body=fetch("feeds/"+slug+".ics")
               assert body.startswith(b"BEGIN:VCALENDAR\r\n"),slug+" missing calendar start"
