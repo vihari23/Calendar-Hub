@@ -39,7 +39,7 @@ jobs:
           node tests/test_scriptable.mjs
       - name: Build and validate four independent ICS feeds
         run: |
-          python -m unittest projects.test_feeds projects.test_temple_extraction -v
+          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         run: python -m scripts.build --config config/feeds.json --out dist
@@ -110,6 +110,17 @@ jobs:
           assert len(review["source_audits"])==review["registered_sources"],"Not all temple sources audited"
           assert review["requires_human_review"] is True
           assert source["phoenix-temples"]["source_checks"]==review["registered_sources"]
+          telugu=json.loads(fetch("feeds/telugu-review.json"))
+          workday=json.loads(fetch("feeds/workday-review.json"))
+          road=json.loads(fetch("feeds/road-audit.json"))
+          assert len(telugu["source_audits"])==telugu["registered_sources"]==12
+          assert len(workday["source_audits"])==workday["registered_sources"]==4
+          assert len(road["source_audits"])==road["checked_sources"]==2
+          assert source["arizona-telugu"]["source_checks"]==12
+          assert source["workday-releases"]["source_checks"]==4
+          assert source["phoenix-road-closures"]["source_checks"]==2
+          assert telugu["requires_human_review"] and workday["requires_human_review"]
+          print("Full-source audits verified: Telugu 12, Workday 4, road 2")
           for slug in expected:
               body=fetch("feeds/"+slug+".ics")
               assert body.startswith(b"BEGIN:VCALENDAR\r\n"),slug+" missing calendar start"
