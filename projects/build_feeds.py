@@ -368,8 +368,13 @@ def build(out,now=None,network=True):
                 newer=auto_from_wzdx(now)
                 accessible+=1
                 events.extend(newer);discovered+=len(newer)
+                road_checks.append({"name":"AZ511 WZDx open data","url":"https://az511.com/api/wzdx",
+                                    "status":"accessible","eligible_closures":len(newer)})
                 if not newer: errors.append("AZ511: no independently verified new full freeway closures")
             except Exception as exc:
+                road_checks.append({"name":"AZ511 WZDx open data","url":"https://az511.com/api/wzdx",
+                                    "status":"blocked" if "403" in str(exc) else "error",
+                                    "warning":str(exc)[:150]})
                 errors.append("AZ511 WZDx: "+str(exc)[:160])
             attempted+=1
             try:
@@ -377,9 +382,24 @@ def build(out,now=None,network=True):
                 accessible+=1
                 newer,info=parse_adot(news,now)
                 events.extend(newer);discovered+=len(newer)
+                road_checks.append({"name":"ADOT weekend advisory","url":"https://azdot.gov/adot-news",
+                                    "status":"accessible","eligible_closures":len(newer),
+                                    "note":info})
                 if not newer: errors.append(info)
             except Exception as exc:
+                road_checks.append({"name":"ADOT weekend advisory","url":"https://azdot.gov/adot-news",
+                                    "status":"blocked" if "403" in str(exc) else "error",
+                                    "warning":str(exc)[:150]})
                 errors.append("ADOT advisory: "+str(exc)[:130])
+            (out/"road-audit.json").write_text(json.dumps({
+                "generated_utc":now.astimezone(UTC).isoformat(),
+                "source_audits":road_checks,"registered_sources":len(manifest["sources"]),
+                "checked_sources":len(road_checks),
+                "warnings":errors,
+                "notes":["AZ511 basic Events API needs a developer key; keyless WZDx is the automatic source.",
+                         "A valid calendar does not prove road data completeness. Check AZ511 before driving."],
+                "automatic_events_found":discovered,
+            },indent=2)+"\n",encoding="utf-8")
         # Published subscriptions contain current or future events only. Historical
         # audit records remain in project.json, not on subscribers' calendars.
         def still_relevant(event):
