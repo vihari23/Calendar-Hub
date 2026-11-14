@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime, date, timezone, timedelta
 from html import escape as html_escape
 import json
+import os
 import shutil
 from zipfile import ZipFile, ZIP_DEFLATED
 from scripts.icon_render import render_icons
@@ -153,7 +154,14 @@ def recent_successful_publication(repo_url):
     if parsed.scheme!="https" or parsed.hostname!="github.com" or len(parts)!=2 or not all(parts):
         raise ValueError("GitHub source repository URL invalid")
     api=f"https://api.github.com/repos/{parts[0]}/{parts[1]}/actions/runs?per_page=30&status=success"
-    req=Request(api,headers={"User-Agent":"VihariCalendarHub/1.0","Accept":"application/vnd.github+json"})
+    headers={"User-Agent":"VihariCalendarHub/1.0",
+             "Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}
+    # GitHub Actions provides a short-lived scoped token; without it the
+    # 60-requests/hour anonymous GitHub API limit can create false failures.
+    token=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"]="Bearer "+token
+    req=Request(api,headers=headers)
     with urlopen(req,timeout=20) as response:
         data=json.load(response)
     successful=[]
