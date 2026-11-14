@@ -22,11 +22,13 @@ class FeedTests(unittest.TestCase):
                 self.assertTrue(raw.startswith(b"BEGIN:VCALENDAR\r\n"))
                 self.assertTrue(raw.endswith(b"END:VCALENDAR\r\n"))
                 self.assertEqual(raw.count(b"BEGIN:VEVENT"),raw.count(b"END:VEVENT"))
-                if slug in ("arizona-telugu","phoenix-temples"):
+                if slug=="arizona-telugu":
                     self.assertEqual(stats["events"],0)
-                    self.assertIn(b"X-VIHARI-GENERATED-UTC:",raw)
+                elif slug=="phoenix-temples":
+                    self.assertEqual(stats["events"],4)
                 else:
                     self.assertGreater(stats["events"],0)
+                self.assertIn(b"X-VIHARI-GENERATED-UTC:",raw)
                 self.assertTrue(all(len(line)<=75 for line in raw.split(b"\r\n")))
     def test_empty_ics_preserves_calendar_name_and_generation_time(self):
         content=ics("Empty calendar","empty",[],datetime(2026,11,14,12,0,tzinfo=ZoneInfo("America/Phoenix")))
@@ -34,6 +36,17 @@ class FeedTests(unittest.TestCase):
         self.assertIn(b"X-WR-CALNAME:Empty calendar",content)
         self.assertNotIn(b"BEGIN:VEVENT",content)
         self.assertTrue(content.endswith(b"END:VCALENDAR\\r\\n".decode("unicode_escape").encode()))
+    def test_temple_html_event_discovery_uses_verified_year(self):
+        from unittest.mock import patch
+        from projects.build_feeds import auto_from_ganapati
+        html="<div>2026 Panchangam available</div><p>Nov 21 - Siva Annabhishekam</p><p>Nov 22 - Ayyappa Mandala Puja</p>"
+        with patch("projects.build_feeds.fetch",return_value=html):
+            events=auto_from_ganapati("https://www.ganapati.org/upcoming-events",datetime(2026,11,14,12,tzinfo=ZoneInfo("America/Phoenix")))
+            self.assertEqual(len(events),2)
+        with patch("projects.build_feeds.fetch",return_value=html):
+            with self.assertRaises(ValueError):
+                auto_from_ganapati("https://www.ganapati.org/upcoming-events",datetime(2027,11,14,12,tzinfo=ZoneInfo("America/Phoenix")))
+
     def test_utc_timed_events_apple_compatible(self):
         e=normalize({"title":"Road","start":"2026-11-13T21:00:00-07:00","end":"2026-11-16T05:00:00-07:00"})
         content=ics("Road","test",[e],datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
