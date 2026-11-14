@@ -40,6 +40,16 @@
       "name": "Sri Venkateswara Temple (regional discovery)",
       "url": "https://www.aztemple.org/",
       "import": "discovery"
+    },
+    {
+      "name": "Maha Ganapati Temple of Arizona — special events (Maricopa City, greater Phoenix metro)",
+      "url": "https://www.ganapati.org/upcoming-events",
+      "import": "ganapati_html"
+    },
+    {
+      "name": "Sri Venkata Krishna Kshetra — official event portal (Tempe)",
+      "url": "https://svktemple.com/",
+      "import": "discovery"
     }
   ],
   "events": [
@@ -60,6 +70,42 @@
       "url": "https://www.aztemple.org/upcoming-events",
       "description": "Special temple celebration; completed historical verified event.",
       "source": "Sri Venkata Krishna Kshetra Temple"
+    },
+    {
+      "title": "Maha Ganapati Temple — Siva Annabhishekam",
+      "start": "2026-11-21",
+      "end": "2026-11-22",
+      "location": "Maha Ganapati Temple of Arizona, 51293 W Teel Rd, Maricopa, AZ 85139",
+      "url": "https://www.ganapati.org/upcoming-events",
+      "description": "Special Siva Annabhishekam announced for November 21, 2026. Organizer has not specified an event time; check before attending. Maricopa City is outside the central Phoenix Valley.",
+      "source": "Maha Ganapati Temple of Arizona"
+    },
+    {
+      "title": "Maha Ganapati Temple — Samuhika Satyanarayana Vratha & Tulasi Kota Puja",
+      "start": "2026-11-21",
+      "end": "2026-11-22",
+      "location": "Maha Ganapati Temple of Arizona, 51293 W Teel Rd, Maricopa, AZ 85139",
+      "url": "https://www.ganapati.org/upcoming-events",
+      "description": "Special communal Vratha and Tulasi Kota Puja announced for November 21, 2026. Time not provided; confirm with temple before attending.",
+      "source": "Maha Ganapati Temple of Arizona"
+    },
+    {
+      "title": "Maha Ganapati Temple — Ayyappa Mandala Puja",
+      "start": "2026-11-22",
+      "end": "2026-11-23",
+      "location": "Maha Ganapati Temple of Arizona, 51293 W Teel Rd, Maricopa, AZ 85139",
+      "url": "https://www.ganapati.org/upcoming-events",
+      "description": "Special Ayyappa Mandala Puja announced for November 22, 2026. Time not provided; confirm with temple before attending.",
+      "source": "Maha Ganapati Temple of Arizona"
+    },
+    {
+      "title": "SVK Temple Tempe — Tulasi Vivah",
+      "start": "2026-11-21",
+      "end": "2026-11-22",
+      "location": "Sri Venkata Krishna Kshetra Temple, 615 S Beck Ave, Tempe, AZ 85281",
+      "url": "https://svktemple.com/",
+      "description": "Temple's official portal lists Tulasi Vivah on Saturday, November 21, 2026. No ceremonial time stated; check with temple before visiting.",
+      "source": "Sri Venkata Krishna Kshetra official portal"
     }
   ]
 }
