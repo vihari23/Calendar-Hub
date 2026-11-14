@@ -24,6 +24,26 @@ class FeedTests(unittest.TestCase):
                 self.assertEqual(raw.count(b"BEGIN:VEVENT"),raw.count(b"END:VEVENT"))
                 self.assertGreater(stats["events"],0)
                 self.assertTrue(all(len(line)<=75 for line in raw.split(b"\r\n")))
+    def test_utc_timed_events_apple_compatible(self):
+        e=normalize({"title":"Road","start":"2026-11-13T21:00:00-07:00","end":"2026-11-16T05:00:00-07:00"})
+        content=ics("Road","test",[e],datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
+        self.assertIn(b"DTSTART:20261114T040000Z",content)
+        self.assertIn(b"DTEND:20261116T120000Z",content)
+        self.assertNotIn(b"DTSTART;TZID=",content)
+    def test_az511_verified_closure_only(self):
+        from unittest.mock import patch
+        from io import BytesIO
+        from projects.build_feeds import auto_from_wzdx
+        core={"road_names":["I-10 eastbound"],"description":"I-10 full closure",
+              "start_date":"2026-11-15T03:00:00Z","end_date":"2026-11-16T11:00:00Z",
+              "is_start_date_verified":True,"is_end_date_verified":True}
+        feature={"type":"Feature","properties":{"core_details":core,"vehicle_impact":"all-lanes-closed"},
+                 "geometry":{"type":"LineString","coordinates":[[-112.1,33.5],[-112.09,33.5]]}}
+        payload=json.dumps({"type":"FeatureCollection","features":[feature]}).encode()
+        with patch("projects.build_feeds.urlopen",return_value=BytesIO(payload)):
+            result=auto_from_wzdx(datetime(2026,11,14,12,tzinfo=ZoneInfo("America/Phoenix")))
+        self.assertEqual(len(result),1)
+        self.assertIn("I-10",result[0]["title"])
     def test_stable_event_ids(self):
         e=normalize({"title":"One","start":"2026-11-14","end":"2026-11-15"})
         a=ics("One","example",[e],datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
