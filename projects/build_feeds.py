@@ -240,12 +240,16 @@ def auto_from_wzdx(now):
         try:
             props=feature["properties"];core=props.get("core_details") or {}
             if not isinstance(core,dict):continue
-            a=core.get("start_date") or props.get("start_date")
-            b=core.get("end_date") or props.get("end_date")
+            # WZDx v4 date/verification fields are feature properties;
+            # older deployments may nest them under core_details.
+            a=props.get("start_date") or core.get("start_date")
+            b=props.get("end_date") or core.get("end_date")
             if not a or not b:continue
             start,day1=read_iso(a);end,day2=read_iso(b)
             if day1 or day2 or end<=start or end<now-timedelta(hours=12) or start>now+timedelta(days=35) or end-start>timedelta(days=7):continue
-            if not (core.get("is_start_date_verified") and core.get("is_end_date_verified")):continue
+            start_verified=props.get("is_start_date_verified",core.get("is_start_date_verified",False))
+            end_verified=props.get("is_end_date_verified",core.get("is_end_date_verified",False))
+            if start_verified is not True or end_verified is not True:continue
             roads=core.get("road_names") or props.get("road_names") or []
             name="; ".join(str(x) for x in roads[:2]) if isinstance(roads,list) else str(roads)
             desc=str(core.get("description") or props.get("description") or "")
