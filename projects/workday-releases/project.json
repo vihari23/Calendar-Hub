@@ -1,0 +1,31 @@
+{
+  "name": "Workday Confirmed Release Milestones",
+  "sources": [
+    {
+      "name": "Workday release schedule",
+      "url": "https://doc.workday.com/admin-guide/en-us/about-workday-documentation/workday-documentation---in-depth/workday-release-schedule.html",
+      "import": "discovery"
+    },
+    {
+      "name": "Workday documentation announcements",
+      "url": "https://doc.workday.com/en-us/workday-documentation-announcements.html",
+      "import": "discovery"
+    },
+    {
+      "name": "Workday Release Center",
+      "url": "https://doc.workday.com/",
+      "import": "discovery"
+    }
+  ],
+  "events": [
+    {
+      "title": "Workday 2026 R2 — Production Release",
+      "start": "2026-09-19",
+      "end": "2026-09-20",
+      "location": "Workday cloud (global)",
+      "url": "https://it.tamus.edu/workdayservices/news-and-updates/biannual-releases/biannual-workday-release-2026-r2/",
+      "description": "Confirmed production release date. 2027 R1/R2 dates are not listed without official verification.",
+      "source": "Workday release documentation and Texas A&M Workday Services"
+    }
+  ]
+}

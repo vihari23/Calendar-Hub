@@ -1,0 +1,65 @@
+{
+  "name": "Phoenix Metro Temple Special Events",
+  "sources": [
+    {
+      "name": "Sri Venkata Krishna Kshetra Temple",
+      "url": "https://www.aztemple.org/upcoming-events",
+      "import": "jsonld"
+    },
+    {
+      "name": "Sri Lalitha Temple",
+      "url": "https://srilalithatemple.org/temple-events/",
+      "import": "jsonld"
+    },
+    {
+      "name": "Sri Bhakta Hanuman Temple",
+      "url": "https://www.hanumantempleaz.org/",
+      "import": "jsonld"
+    },
+    {
+      "name": "Ekta Mandir",
+      "url": "https://www.ektamandir.org/",
+      "import": "discovery"
+    },
+    {
+      "name": "Hindu Temple of Arizona",
+      "url": "https://hindutempleaz.org/events-list/",
+      "import": "jsonld"
+    },
+    {
+      "name": "Sai Dhyan Mandir",
+      "url": "https://saidhyanmandir.org/events",
+      "import": "jsonld"
+    },
+    {
+      "name": "Arizona Shiva Vishnu Temple",
+      "url": "https://www.arizonashivavishnu.org/",
+      "import": "discovery"
+    },
+    {
+      "name": "Sri Venkateswara Temple (regional discovery)",
+      "url": "https://www.aztemple.org/",
+      "import": "discovery"
+    }
+  ],
+  "events": [
+    {
+      "title": "Sri Lalitha Temple Shata Chandi Sahita Maharudram 2026",
+      "start": "2026-10-14",
+      "end": "2026-10-19",
+      "location": "Sri Lalitha Temple, Phoenix, Arizona",
+      "url": "https://srilalithatemple.org/",
+      "description": "Five-day special temple celebration; completed verified historical event.",
+      "source": "Sri Lalitha Temple"
+    },
+    {
+      "title": "Sri Venkata Krishna Kshetra Nagara Panchami Celebration 2026",
+      "start": "2026-08-16",
+      "end": "2026-08-17",
+      "location": "Sri Venkata Krishna Kshetra Temple, Tempe, Arizona",
+      "url": "https://www.aztemple.org/upcoming-events",
+      "description": "Special temple celebration; completed historical verified event.",
+      "source": "Sri Venkata Krishna Kshetra Temple"
+    }
+  ]
+}

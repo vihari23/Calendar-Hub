@@ -1,0 +1,58 @@
+{
+  "name": "Phoenix Metro ADOT Freeway Closures",
+  "sources": [
+    {
+      "name": "ADOT Weekend Freeway Travel Advisory",
+      "url": "https://azdot.gov/adot-news",
+      "import": "adot"
+    },
+    {
+      "name": "AZ511 real-time verification",
+      "url": "https://az511.gov/",
+      "import": "discovery"
+    },
+    {
+      "name": "ADOT Upcoming SR 51 Closures",
+      "url": "https://azdot.gov/current-and-upcoming-sr-51-closures-and-restrictions",
+      "import": "discovery"
+    }
+  ],
+  "events": [
+    {
+      "title": "ADOT closure: SR 51 southbound Northern to Highland",
+      "start": "2026-11-13T21:00:00-07:00",
+      "end": "2026-11-16T05:00:00-07:00",
+      "location": "SR 51, Phoenix, AZ",
+      "url": "https://azdot.gov/news/adots-weekend-freeway-travel-advisory-nov-13-16",
+      "description": "Official ADOT advisory. Detour: southbound 16th Street or nearby arterials. Subject to change.",
+      "source": "ADOT"
+    },
+    {
+      "title": "ADOT closure: I-10 westbound Loop 303 to Verrado Way",
+      "start": "2026-11-13T21:00:00-07:00",
+      "end": "2026-11-16T05:00:00-07:00",
+      "location": "I-10 Papago Freeway, West Valley, AZ",
+      "url": "https://azdot.gov/news/adots-weekend-freeway-travel-advisory-nov-13-16",
+      "description": "Official ADOT advisory. Detour: Yuma Road westbound. Subject to change.",
+      "source": "ADOT"
+    },
+    {
+      "title": "ADOT closure: Loop 303 eastbound 43rd Avenue to I-17",
+      "start": "2026-11-13T22:00:00-07:00",
+      "end": "2026-11-16T05:00:00-07:00",
+      "location": "Loop 303, Phoenix, AZ",
+      "url": "https://azdot.gov/news/adots-weekend-freeway-travel-advisory-nov-13-16",
+      "description": "Official ADOT advisory. Westbound reduced to one lane. Subject to change.",
+      "source": "ADOT"
+    },
+    {
+      "title": "ADOT closure: Loop 202 westbound Santan Williams Field to Gilbert roads",
+      "start": "2026-11-13T21:00:00-07:00",
+      "end": "2026-11-16T05:00:00-07:00",
+      "location": "Loop 202 Santan, Gilbert, AZ",
+      "url": "https://azdot.gov/news/adots-weekend-freeway-travel-advisory-nov-13-16",
+      "description": "Official ADOT advisory. Subject to change.",
+      "source": "ADOT"
+    }
+  ]
+}

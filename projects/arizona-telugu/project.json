@@ -1,0 +1,85 @@
+{
+  "name": "Arizona Telugu Community Events",
+  "sources": [
+    {
+      "name": "Arizona Telugu Association",
+      "url": "https://www.azteluguassociation.org/",
+      "import": "jsonld"
+    },
+    {
+      "name": "Arizona Telugu Association (alternate)",
+      "url": "https://arizonatelugu.org/",
+      "import": "discovery"
+    },
+    {
+      "name": "Arizona Telangana Association",
+      "url": "https://namastephoenix.com/events/azta-bathukamma",
+      "import": "discovery"
+    },
+    {
+      "name": "TTA Arizona",
+      "url": "https://www.mytelanganaus.org/",
+      "import": "discovery"
+    },
+    {
+      "name": "American Telugu Association",
+      "url": "https://americanteluguassociation.org/regional-coordinator.php",
+      "import": "discovery"
+    },
+    {
+      "name": "TANA Events",
+      "url": "https://events.tana.org/",
+      "import": "discovery"
+    },
+    {
+      "name": "NATS",
+      "url": "https://www.natsworld.org/nats-global/upcoming-events",
+      "import": "discovery"
+    },
+    {
+      "name": "AZIndia",
+      "url": "https://www.azindia.com/eventlist.asp",
+      "import": "discovery"
+    },
+    {
+      "name": "Namaste Phoenix",
+      "url": "https://namastephoenix.com/",
+      "import": "jsonld"
+    },
+    {
+      "name": "AZNamaste",
+      "url": "https://www.aznamaste.com/events",
+      "import": "discovery"
+    },
+    {
+      "name": "Sulekha",
+      "url": "https://events.sulekha.com/",
+      "import": "discovery"
+    },
+    {
+      "name": "TodayTelugu",
+      "url": "https://www.todaytelugu.net/en/events",
+      "import": "jsonld"
+    }
+  ],
+  "events": [
+    {
+      "title": "Arizona Telangana Association Bathukamma 2026",
+      "start": "2026-10-18T11:00:00-07:00",
+      "end": "2026-10-18T21:00:00-07:00",
+      "location": "American Royal Palace, 1915 W Thunderbird Rd, Phoenix, AZ",
+      "url": "https://namastephoenix.com/events/azta-bathukamma",
+      "description": "Official Arizona Telangana Association festival; completed historical verified event.",
+      "source": "AZTG via Namaste Phoenix"
+    },
+    {
+      "title": "TTA Arizona Bathukamma and Dasara 2026",
+      "start": "2026-10-10T10:00:00-07:00",
+      "end": "2026-10-10T22:00:00-07:00",
+      "location": "El Zaribah Shrine Auditorium, 552 N 40th St, Phoenix, AZ",
+      "url": "https://namastephoenix.com/events/tta-bathukamma",
+      "description": "TTA Arizona special community celebration; completed historical verified event.",
+      "source": "TTA via Namaste Phoenix"
+    }
+  ]
+}
