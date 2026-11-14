@@ -42,6 +42,8 @@ jobs:
           python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: python -m scripts.build --config config/feeds.json --out dist
       - name: Upload health report (even if checks fail)
         if: always()
