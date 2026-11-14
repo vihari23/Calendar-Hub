@@ -190,6 +190,43 @@ def parse_adot(news_page,now):
         return [],"Advisory found but no precisely timed full closures parsed"
     return output,f"{len(output)} timed closures extracted from {url}"
 
+def auto_from_wzdx(now):
+    """Read official AZ511 WZDx public data, accepting only verified nearby closures."""
+    url="https://az511.com/api/wzdx"
+    req=Request(url,headers={"User-Agent":"VihariCalendarHub/1.0","Accept":"application/json"})
+    with urlopen(req,timeout=25) as response:
+        blob=response.read(20000001)
+    if len(blob)>20000000: raise ValueError("AZ511 data exceeds 20MB")
+    data=json.loads(blob)
+    if data.get("type")!="FeatureCollection": raise ValueError("Unexpected AZ511 data format")
+    results=[]
+    for feature in data.get("features",[]):
+        try:
+            props=feature["properties"];core=props.get("core_details") or {}
+            if not isinstance(core,dict):continue
+            a=core.get("start_date") or props.get("start_date")
+            b=core.get("end_date") or props.get("end_date")
+            if not a or not b:continue
+            start,day1=read_iso(a);end,day2=read_iso(b)
+            if day1 or day2 or end<=start or end<now-timedelta(hours=12) or start>now+timedelta(days=35) or end-start>timedelta(days=7):continue
+            if not (core.get("is_start_date_verified") and core.get("is_end_date_verified")):continue
+            roads=core.get("road_names") or props.get("road_names") or []
+            name="; ".join(str(x) for x in roads[:2]) if isinstance(roads,list) else str(roads)
+            desc=str(core.get("description") or props.get("description") or "")
+            impact=props.get("vehicle_impact",core.get("vehicle_impact",""))
+            if impact!="all-lanes-closed" and "full closure" not in (name+" "+desc).lower():continue
+            if not re.search(r"\b(?:I-\d+|Loop\s+\d+|SR\s+\d+|US\s+\d+)\b",name+" "+desc,re.I):continue
+            def coords(value):
+                if isinstance(value,list):
+                    if len(value)>1 and isinstance(value[0],(int,float)) and isinstance(value[1],(int,float)):
+                        yield value[0],value[1]
+                    else:
+                        for node in value:yield from coords(node)
+            if not any(-113.1<=lon<=-111 and 32.8<=lat<=34 for lon,lat in coords((feature.get("geometry") or {}).get("coordinates",[]))):continue
+            results.append(normalize({"title":"AZ511 closure: "+name[:130],"start":start.isoformat(),"end":end.isoformat(),"location":name+", Phoenix metro, AZ","url":"https://az511.gov/","description":desc[:800]+" Verify with AZ511 before travel.","source":url}))
+        except (KeyError,TypeError,ValueError,OverflowError):continue
+    return results
+
 def esc(text):
     return str(text).replace("\\","\\\\").replace("\n","\\n").replace(",","\\,").replace(";","\\;").replace("\r","")
 
@@ -219,8 +256,8 @@ def ics(name,slug,events,now):
             start="DTSTART;VALUE=DATE:"+e["start"].strftime("%Y%m%d")
             end="DTEND;VALUE=DATE:"+e["end"].strftime("%Y%m%d")
         else:
-            start="DTSTART;TZID=America/Phoenix:"+e["start"].strftime("%Y%m%dT%H%M%S")
-            end="DTEND;TZID=America/Phoenix:"+e["end"].strftime("%Y%m%dT%H%M%S")
+            start="DTSTART:"+e["start"].astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
+            end="DTEND:"+e["end"].astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
         lines.extend(["BEGIN:VEVENT","UID:"+ident+"@vihari-calendar-hub",
           "DTSTAMP:"+now.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ"),
           "SUMMARY:"+esc(e["title"]),start,end,
@@ -251,12 +288,18 @@ def build(out,now=None,network=True):
                     errors.append(source["url"]+": "+str(exc)[:100])
         if network and slug=="phoenix-road-closures":
             try:
+                newer=auto_from_wzdx(now)
+                events.extend(newer);discovered+=len(newer)
+                if not newer: errors.append("AZ511: no independently verified new full freeway closures")
+            except Exception as exc:
+                errors.append("AZ511 WZDx: "+str(exc)[:160])
+            try:
                 news=fetch("https://azdot.gov/adot-news")
                 newer,info=parse_adot(news,now)
                 events.extend(newer);discovered+=len(newer)
                 if not newer: errors.append(info)
             except Exception as exc:
-                errors.append("ADOT: "+str(exc)[:160])
+                errors.append("ADOT advisory: "+str(exc)[:130])
         content=ics(manifest["name"],slug,events,now)
         (out/(slug+".ics")).write_bytes(content)
         report[slug]={"events":content.count(b"BEGIN:VEVENT"),"auto_discovered":discovered,
