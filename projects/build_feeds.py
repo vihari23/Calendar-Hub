@@ -313,6 +313,16 @@ def build(out,now=None,network=True):
         for event in manifest["events"]:
             events.append(normalize(event))
         discovered=0; errors=[]; attempted=0; accessible=0
+        temple_audit=[]; temple_review=[]
+        if network and slug=="phoenix-temples":
+            from projects.temple_extraction import scan_source
+            for src in manifest["sources"]:
+                audit=scan_source(src,now)
+                temple_audit.append(audit)
+                temple_review.extend(audit.get("candidates",[]))
+                if audit["status"] in ("blocked","error","partial"):
+                    errors.append("Temple source "+src["name"]+": "+
+                                  ("; ".join(audit.get("warnings",[])) or audit["status"])[:180])
         if network and slug in ("arizona-telugu","phoenix-temples"):
             for source in manifest["sources"]:
                 importer=source.get("import")
@@ -366,11 +376,28 @@ def build(out,now=None,network=True):
             notes.append(str(discovery)+" directory sources are manual discovery references, not automatically extracted.")
         if network and slug in ("arizona-telugu","phoenix-temples") and not discovered:
             notes.append("Accessible event pages yielded no new qualifying structured events.")
+        if slug=="phoenix-temples" and network:
+            notes.append("PDF, image and HTML review candidates are not auto-published without organizer corroboration.")
         content=ics(manifest["name"],slug,events,now)
         (out/(slug+".ics")).write_bytes(content)
+        if slug=="phoenix-temples":
+            (out/"temple-review.json").write_text(json.dumps({
+                "generated_utc":now.astimezone(UTC).isoformat(),
+                "requires_human_review":True,
+                "note":"OCR, PDF and unstructured HTML may misassociate dates. Nothing in this file was auto-published to ICS.",
+                "registered_sources":len(manifest["sources"]),
+                "source_audits":temple_audit,
+                "candidates":temple_review[:120]
+            },ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         report[slug]={"events":content.count(b"BEGIN:VEVENT"),"auto_discovered":discovered,
-            "source_checks":attempted,"sources_accessible":accessible,
+            "source_checks":(len(temple_audit) if slug=="phoenix-temples" and network else attempted),
+            "sources_accessible":(sum(r["status"] not in ("blocked","error","unverified") for r in temple_audit)
+                                  if slug=="phoenix-temples" and network else accessible),
             "source_registry_total":len(manifest["sources"]),
+            "pdf_files_extracted":sum(r.get("pdf_scanned",0) for r in temple_audit),
+            "pdf_pages_ocr":sum(r.get("pdf_pages_ocr",0) for r in temple_audit),
+            "flyer_images_ocr":sum(r.get("images_ocr",0) for r in temple_audit),
+            "review_candidates":len(temple_review),
             "manual_discovery_sources":discovery,
             "warnings":errors,"notes":notes,
             "generated_utc":now.astimezone(UTC).isoformat()}
