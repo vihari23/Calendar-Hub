@@ -117,6 +117,7 @@ def extract_pdf(body,full_ocr=False):
     if not body.startswith(b"%PDF"):
         raise ValueError("PDF signature mismatch")
     doc=fitz.open(stream=body,filetype="pdf")
+    page_count=len(doc)
     if len(doc)>MAX_PDF_PAGES:
         raise ValueError(f"PDF has {len(doc)} pages; exceeds {MAX_PDF_PAGES}-page limit")
     parts=[];ocr_count=0
@@ -130,7 +131,7 @@ def extract_pdf(body,full_ocr=False):
             parts.append("Page "+str(p.number+1)+" OCR\n"+scanned)
             ocr_count+=1
     doc.close()
-    return "\n".join(parts),len(parts),ocr_count
+    return "\n".join(parts),page_count,ocr_count
 
 def explicit_dates(line):
     dates=[]
@@ -228,10 +229,13 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None):
         # Sources with a directly linked PDF or image but generic filenames
         # should still get scanned when the anchor says 'Download calendar'.
         report["assets_found"]=len(candidates)
+        report["asset_scan_limited"]=len(candidates)>=MAX_IMAGE_ASSETS+MAX_PDF_ASSETS
+        report["assets_scanned"]=[]
         for link,kind in candidates:
             try:
                 body,ctype=fetcher(link,MAX_ASSET_BYTES)
                 report["assets_checked"]+=1
+                report["assets_scanned"].append({"url":link,"type":kind,"content_type":ctype})
                 if kind=="pdf" and (body.startswith(b"%PDF") or "pdf" in ctype):
                     text,pages,ocr=extract_pdf(body)
                     report["pdf_scanned"]+=1;report["pdf_pages_ocr"]+=ocr
