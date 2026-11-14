@@ -20,6 +20,11 @@ class MonitorTests(unittest.TestCase):
         self.assertEqual(r["events"],1)
         self.assertEqual(r["upcoming"][0]["date"],"2026-11-14")
         self.assertEqual(r["age_hours"],1)
+    def test_ongoing_multiday_event_visible(self):
+        raw=sample().replace(b"SUMMARY:Test event",b"DTEND:20261116T120000Z\r\nSUMMARY:Test event")
+        result=parse_calendar(raw,datetime(2026,11,15,20,tzinfo=timezone.utc),1)
+        self.assertEqual(result["upcoming"][0]["date"],"2026-11-15")
+        self.assertTrue(result["upcoming"][0]["name"].startswith("Ongoing:"))
     def test_folding(self):
         s=sample().replace(b"SUMMARY:Test",b"SUMMARY:Te\r\n st")
         self.assertEqual(parse_calendar(s,NOW,1)["upcoming"][0]["name"],"Test event")
