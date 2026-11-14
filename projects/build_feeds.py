@@ -245,7 +245,7 @@ def fold(line):
 def ics(name,slug,events,now):
     lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Vihari Calendar Hub//Verified Events//EN",
            "CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:"+esc(name),
-           "X-WR-TIMEZONE:America/Phoenix","REFRESH-INTERVAL;VALUE=DURATION:PT12H"]
+           "X-WR-TIMEZONE:America/Phoenix","X-VIHARI-GENERATED-UTC:"+now.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ"),"REFRESH-INTERVAL;VALUE=DURATION:PT12H"]
     unique={}
     for e in events:
         key=(e["title"].casefold(),str(e["start"]))
@@ -276,35 +276,62 @@ def build(out,now=None,network=True):
         events=[]
         for event in manifest["events"]:
             events.append(normalize(event))
-        discovered=0; errors=[]
+        discovered=0; errors=[]; attempted=0; accessible=0
         if network and slug in ("arizona-telugu","phoenix-temples"):
             for source in manifest["sources"]:
                 if source.get("import")!="jsonld":
                     continue
+                attempted+=1
                 try:
                     newer=auto_from_jsonld(source["url"],slug)
-                    events.extend(newer);discovered+=len(newer)
+                    events.extend(newer);discovered+=len(newer);accessible+=1
                 except Exception as exc:
                     errors.append(source["url"]+": "+str(exc)[:100])
         if network and slug=="phoenix-road-closures":
+            attempted+=1
             try:
                 newer=auto_from_wzdx(now)
+                accessible+=1
                 events.extend(newer);discovered+=len(newer)
                 if not newer: errors.append("AZ511: no independently verified new full freeway closures")
             except Exception as exc:
                 errors.append("AZ511 WZDx: "+str(exc)[:160])
+            attempted+=1
             try:
                 news=fetch("https://azdot.gov/adot-news")
+                accessible+=1
                 newer,info=parse_adot(news,now)
                 events.extend(newer);discovered+=len(newer)
                 if not newer: errors.append(info)
             except Exception as exc:
                 errors.append("ADOT advisory: "+str(exc)[:130])
+        # Published subscriptions contain current or future events only. Historical
+        # audit records remain in project.json, not on subscribers' calendars.
+        def still_relevant(event):
+            finish=(datetime.combine(event["end"],datetime.min.time(),tzinfo=TZ)
+                    if event["all_day"] else event["end"])
+            return finish>now-timedelta(hours=1)
+        events=[e for e in events if still_relevant(e)]
+        unique={(e["title"].casefold(),str(e["start"])):e for e in events}
+        events=list(unique.values())
+        notes=[]
+        if not events:
+            notes.append("No verified current or upcoming events; an empty ICS is intentional.")
+        if slug=="workday-releases":
+            notes.append("Future Workday milestone dates are manually curated; no official public Workday release API is connected.")
+        discovery=sum(x.get("import")=="discovery" for x in manifest["sources"])
+        if discovery:
+            notes.append(str(discovery)+" directory sources are manual discovery references, not automatically extracted.")
+        if network and slug in ("arizona-telugu","phoenix-temples") and not discovered:
+            notes.append("Accessible event pages yielded no new qualifying structured events.")
         content=ics(manifest["name"],slug,events,now)
         (out/(slug+".ics")).write_bytes(content)
         report[slug]={"events":content.count(b"BEGIN:VEVENT"),"auto_discovered":discovered,
-            "source_checks":sum(s.get("import")=="jsonld" for s in manifest["sources"]),
-            "warnings":errors,"generated_utc":now.astimezone(UTC).isoformat()}
+            "source_checks":attempted,"sources_accessible":accessible,
+            "source_registry_total":len(manifest["sources"]),
+            "manual_discovery_sources":discovery,
+            "warnings":errors,"notes":notes,
+            "generated_utc":now.astimezone(UTC).isoformat()}
         print(slug,report[slug])
     (out/"source-status.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     return report
