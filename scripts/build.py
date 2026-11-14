@@ -40,7 +40,7 @@ def load_config(path):
             raise ValueError(f"{fid}: source repository must be public GitHub")
         if not isinstance(f.get("enabled"),bool) or f.get("expected_update") not in ("daily","weekly","monthly"):
             raise ValueError(f"{fid}: invalid metadata")
-        for key,low,high in (("max_age_hours",1,2160),("min_events",1,200000)):
+        for key,low,high in (("max_age_hours",1,2160),("min_events",0,200000)):
             val=f.get(key)
             if type(val) is not int or not low<=val<=high:
                 raise ValueError(f"{fid}: invalid {key}")
@@ -110,6 +110,11 @@ def parse_calendar(raw,now,min_events):
         if STAMP_RE.fullmatch(s):
             stamps.append(datetime.strptime(s,"%Y%m%dT%H%M%SZ").replace(tzinfo=UTC))
     latest=max(stamps) if stamps else None
+    # Timestamp in the calendar header permits empty-but-current calendars.
+    generated=[line.partition(":")[2] for line in lines if line.startswith("X-VIHARI-GENERATED-UTC:")]
+    if generated and STAMP_RE.fullmatch(generated[0]):
+        header_dt=datetime.strptime(generated[0],"%Y%m%dT%H%M%SZ").replace(tzinfo=UTC)
+        latest=max(latest,header_dt) if latest else header_dt
     if latest and latest>now+timedelta(hours=12):
         raise ValueError("Feed generation timestamp is in the future")
     window_end=(now+timedelta(days=365)).astimezone(PHOENIX).date()
@@ -235,13 +240,34 @@ def build(config,output,now=None,getter=download):
         return getter(url)
     report={"schema_version":1,"checked_at_utc":now.isoformat(),
             "feeds":[check_feed(f,now,prefer_new_local_feeds) for f in cfg["feeds"]]}
+    # Separate source-coverage quality from syntactic feed health.
+    source_status_path=output/"feeds"/"source-status.json"
+    if source_status_path.is_file():
+        source_status=json.loads(source_status_path.read_text(encoding="utf8"))
+        for f in report["feeds"]:
+            source=source_status.get(f["id"])
+            if source is None:
+                continue
+            f["source_coverage"]={
+                "auto_discovered":source.get("auto_discovered",0),
+                "sources_accessible":source.get("sources_accessible",0),
+                "sources_attempted":source.get("source_checks",0),
+                "sources_registered":source.get("source_registry_total",0),
+                "warnings":source.get("warnings",[]),
+                "notes":source.get("notes",[])}
+            if f["events"]==0:
+                f["detail"]+="; no verified current or future events"
+            if source.get("warnings"):
+                f["detail"]+="; source collection warnings — consult source-status.json"
+            if source.get("notes") and source.get("auto_discovered",0)==0:
+                f["detail"]+="; automatic discovery coverage is limited"
     report["healthy"]=all(f["status"] in ("healthy","disabled") for f in report["feeds"])
     output=Path(output)
     output.mkdir(parents=True,exist_ok=True)
     (output/"status.json").write_text(json.dumps(report,indent=2,ensure_ascii=False)+"\n",encoding="utf8")
     # Compact public event data for the iPhone widget; no private URLs or personal calendars.
     today=now.astimezone(PHOENIX).date()
-    through=today+timedelta(days=90)
+    through=today+timedelta(days=365)
     widget_data={
         "schema_version":1,
         "checked_at_utc":now.isoformat(),
