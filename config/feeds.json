@@ -65,7 +65,7 @@
     },
     {
       "id": "workday-releases",
-      "name": "Workday Confirmed Release Milestones",
+      "name": "Workday Releases & Planned Milestones",
       "description": "Verified Workday production releases; no speculative future milestones",
       "kind": "Technology & work",
       "url": "https://vihari23.github.io/Calendar-Hub/feeds/workday-releases.ics",
