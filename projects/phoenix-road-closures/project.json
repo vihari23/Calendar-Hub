@@ -7,9 +7,9 @@
       "import": "adot"
     },
     {
-      "name": "AZ511 real-time verification",
-      "url": "https://az511.gov/",
-      "import": "discovery"
+      "name": "AZ511 WZDx verified roadwork data",
+      "url": "https://az511.com/api/wzdx",
+      "import": "wzdx"
     },
     {
       "name": "ADOT Upcoming SR 51 Closures",

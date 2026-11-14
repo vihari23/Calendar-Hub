@@ -14,6 +14,15 @@ def sample(stamp="20261113T200000Z",uid=True):
 def item():
     return dict(id="example",name="Example",description="Example calendar",kind="Test",url="https://raw.githubusercontent.com/vihari23/X/main/a.ics",source_repository="https://github.com/vihari23/X",expected_update="daily",max_age_hours=72,min_events=1,enabled=True)
 
+class WorkflowScheduleTests(unittest.TestCase):
+    def test_daily_schedule_and_refresh_pipeline(self):
+        text=(Path(__file__).resolve().parents[1]/".github/workflows/publish.yml").read_text()
+        self.assertIn("- cron: '30 16 * * *'",text)
+        self.assertIn("workflow_dispatch:",text)
+        self.assertIn("python -m projects.build_feeds --out dist/feeds",text)
+        self.assertIn("Verify public ICS subscriptions and published Hub",text)
+        self.assertIn("GH_TOKEN: ${{ github.token }}",text)
+
 class MonitorTests(unittest.TestCase):
     def test_parser(self):
         r=parse_calendar(sample(),NOW,1)

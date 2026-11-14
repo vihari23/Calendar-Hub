@@ -391,6 +391,21 @@ def build(out,now=None,network=True):
                                     "status":"blocked" if "403" in str(exc) else "error",
                                     "warning":str(exc)[:150]})
                 errors.append("ADOT advisory: "+str(exc)[:130])
+            # Register the official SR 51 restrictions page as a third
+            # independently checked source, even when ADOT blocks automated fetches.
+            attempted+=1
+            sr51_url="https://azdot.gov/current-and-upcoming-sr-51-closures-and-restrictions"
+            try:
+                page=fetch(sr51_url)
+                accessible+=1
+                road_checks.append({"name":"ADOT SR 51 restrictions","url":sr51_url,
+                                    "status":"accessible","candidate_page_bytes":len(page),
+                                    "note":"Reference-only verification; no event dates inferred"})
+            except Exception as exc:
+                road_checks.append({"name":"ADOT SR 51 restrictions","url":sr51_url,
+                                    "status":"blocked" if "403" in str(exc) or "429" in str(exc) else "error",
+                                    "warning":str(exc)[:150]})
+                errors.append("ADOT SR 51 reference: "+str(exc)[:130])
             (out/"road-audit.json").write_text(json.dumps({
                 "generated_utc":now.astimezone(UTC).isoformat(),
                 "source_audits":road_checks,"registered_sources":len(manifest["sources"]),

@@ -117,12 +117,12 @@ jobs:
           road=json.loads(fetch("feeds/road-audit.json"))
           assert len(telugu["source_audits"])==telugu["registered_sources"]==12
           assert len(workday["source_audits"])==workday["registered_sources"]==4
-          assert len(road["source_audits"])==road["checked_sources"]==2
+          assert len(road["source_audits"])==road["checked_sources"]==road["registered_sources"]==3
           assert source["arizona-telugu"]["source_checks"]==12
           assert source["workday-releases"]["source_checks"]==4
-          assert source["phoenix-road-closures"]["source_checks"]==2
+          assert source["phoenix-road-closures"]["source_checks"]==3
           assert telugu["requires_human_review"] and workday["requires_human_review"]
-          print("Full-source audits verified: Telugu 12, Workday 4, road 2")
+          print("Full-source audits verified: Telugu 12, Workday 4, road 3")
           for slug in expected:
               body=fetch("feeds/"+slug+".ics")
               assert body.startswith(b"BEGIN:VCALENDAR\r\n"),slug+" missing calendar start"
