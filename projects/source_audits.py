@@ -82,7 +82,7 @@ def audit_workday(sources, events, now, fetcher=fetch_bytes):
             visible="\n".join(page.text)
             row["status"]="accessible"
             row["release_dates"]=extract_workday_milestones(visible)
-            if len(visible.strip())<80:
+            if len(visible.strip())<80 and not row["release_dates"]:
                 row["status"]="incomplete"
                 row["warnings"].append("Page contains little accessible text; may require authentication or rendering.")
             for entry in row["release_dates"]:
