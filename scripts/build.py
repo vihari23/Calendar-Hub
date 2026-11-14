@@ -117,9 +117,12 @@ def parse_calendar(raw,now,min_events):
     upcoming=[]
     for e in evs:
         d=display_date(e.get("_dtstart",""))
-        if d and today<=d.date()<=window_end:
+        finish=display_date("DTSTART:"+e["DTEND"]) if e.get("DTEND") else None
+        active=d and d.date()<today and finish and finish>now.astimezone(PHOENIX)
+        if d and (today<=d.date()<=window_end or active):
             title=(e["SUMMARY"].replace("\\n"," ").replace("\\N"," ").replace("\\, ",", ").replace("\\,",",").replace("\\;",";").replace("\\\\","\\"))
-            upcoming.append({"date":d.date().isoformat(),"start":d.isoformat(),"name":title})
+            visible=(today if active else d.date())
+            upcoming.append({"date":visible.isoformat(),"start":(now.astimezone(PHOENIX).isoformat() if active else d.isoformat()),"name":("Ongoing: "+title if active else title)})
     upcoming.sort(key=lambda x:(x["start"],x["name"]))
     return {"events":len(evs),"last_generated_utc":latest.isoformat() if latest else None,
             "age_hours":round((now-latest).total_seconds()/3600,1) if latest else None,
