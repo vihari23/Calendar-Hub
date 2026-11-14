@@ -22,8 +22,18 @@ class FeedTests(unittest.TestCase):
                 self.assertTrue(raw.startswith(b"BEGIN:VCALENDAR\r\n"))
                 self.assertTrue(raw.endswith(b"END:VCALENDAR\r\n"))
                 self.assertEqual(raw.count(b"BEGIN:VEVENT"),raw.count(b"END:VEVENT"))
-                self.assertGreater(stats["events"],0)
+                if slug in ("arizona-telugu","phoenix-temples"):
+                    self.assertEqual(stats["events"],0)
+                    self.assertIn(b"X-VIHARI-GENERATED-UTC:",raw)
+                else:
+                    self.assertGreater(stats["events"],0)
                 self.assertTrue(all(len(line)<=75 for line in raw.split(b"\r\n")))
+    def test_empty_ics_preserves_calendar_name_and_generation_time(self):
+        content=ics("Empty calendar","empty",[],datetime(2026,11,14,12,0,tzinfo=ZoneInfo("America/Phoenix")))
+        self.assertIn(b"X-VIHARI-GENERATED-UTC:20261114T190000Z",content)
+        self.assertIn(b"X-WR-CALNAME:Empty calendar",content)
+        self.assertNotIn(b"BEGIN:VEVENT",content)
+        self.assertTrue(content.endswith(b"END:VCALENDAR\\r\\n".decode("unicode_escape").encode()))
     def test_utc_timed_events_apple_compatible(self):
         e=normalize({"title":"Road","start":"2026-11-13T21:00:00-07:00","end":"2026-11-16T05:00:00-07:00"})
         content=ics("Road","test",[e],datetime(2026,11,14,tzinfo=ZoneInfo("America/Phoenix")))
