@@ -100,7 +100,7 @@ def normalize(event):
         raise ValueError("Event source must be HTTPS")
     return dict(title=title,start=start,end=end,all_day=all_day,
                 location=str(event.get("location","")),url=link,
-                description=str(event.get("description","")),source=str(event.get("source","")))
+                description=str(event.get("description","")),source=str(event.get("source","")),tentative=bool(event.get("tentative",False)))
 
 def auto_from_jsonld(url,kind):
     parser=Collector()
@@ -263,7 +263,7 @@ def ics(name,slug,events,now):
           "SUMMARY:"+esc(e["title"]),start,end,
           "DESCRIPTION:"+esc((e.get("description","")+" Source: "+e.get("source","")).strip()),
           "LOCATION:"+esc(e.get("location","")),
-          "URL:"+e.get("url",""),"STATUS:CONFIRMED","END:VEVENT"])
+          "URL:"+e.get("url",""),"STATUS:"+("TENTATIVE" if e.get("tentative") else "CONFIRMED"),"END:VEVENT"])
     lines.append("END:VCALENDAR")
     return "".join(fold(line) for line in lines).encode("utf-8")
 
