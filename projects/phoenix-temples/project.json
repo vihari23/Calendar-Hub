@@ -13,13 +13,13 @@
     },
     {
       "name": "Sri Bhakta Hanuman Temple",
-      "url": "https://www.hanumantempleaz.org/",
+      "url": "https://www.hanumantempleaz.org/upcomingevents",
       "import": "jsonld"
     },
     {
       "name": "Ekta Mandir",
-      "url": "https://www.ektamandir.org/",
-      "import": "discovery"
+      "url": "https://www.ektamandiraz.org/religious-events",
+      "import": "fullscan"
     },
     {
       "name": "Hindu Temple of Arizona",
@@ -33,13 +33,13 @@
     },
     {
       "name": "Arizona Shiva Vishnu Temple",
-      "url": "https://www.arizonashivavishnu.org/",
-      "import": "discovery"
+      "url": "https://www.arizonashivavishnu.org/calender",
+      "import": "fullscan"
     },
     {
-      "name": "Sri Venkateswara Temple (regional discovery)",
+      "name": "Sri Venkata Krishna Kshetra main page",
       "url": "https://www.aztemple.org/",
-      "import": "discovery"
+      "import": "fullscan"
     },
     {
       "name": "Maha Ganapati Temple of Arizona — special events (Maricopa City, greater Phoenix metro)",
@@ -49,7 +49,12 @@
     {
       "name": "Sri Venkata Krishna Kshetra — official event portal (Tempe)",
       "url": "https://svktemple.com/",
-      "import": "discovery"
+      "import": "fullscan"
+    },
+    {
+      "name": "Arizona Shiva Vishnu Temple — official 2026 calendar PDF",
+      "url": "https://www.arizonashivavishnu.org/_files/ugd/242321_8a6a21e9571649f294d34a4c49d3e3e4.pdf",
+      "import": "document"
     }
   ],
   "events": [
