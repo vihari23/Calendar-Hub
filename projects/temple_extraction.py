@@ -42,8 +42,8 @@ US_DATE=re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](20\d{2})\b")
 # A month and year explicitly printed in a flyer heading may establish the
 # year for individual month/day rows on THAT image only. Never use a site-wide
 # or inferred default year, and never auto-publish the OCR interpretation.
-MONTH_YEAR_HEADER=re.compile(r"\\b("+MONTH_RE+r")\\s+(20\\d{2})\\b",re.I)
-MONTH_DAY_ROW=re.compile(r"\\b("+MONTH_RE+r")\\s+(0?[1-9]|[12]\\d|3[01])(?:st|nd|rd|th)?\\b",re.I)
+MONTH_YEAR_HEADER=re.compile(r"\b("+MONTH_RE+r")\s+(20\d{2})\b",re.I)
+MONTH_DAY_ROW=re.compile(r"\b("+MONTH_RE+r")\s+(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?\b",re.I)
 ASSET_SUFFIX=re.compile(r"\.(?:pdf|png|jpe?g|webp)(?:$|\?)",re.I)
 KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang|rudram|maharudra|abhishe[kc]|satyanarayana|yagam|homam|mandala|purnima|shashti|chaturthi",re.I)
 SKIP=re.compile(r"(?:logo|icon|favicon|background|gopuram|gallery|galleryimage|banner-blank|headerbg)",re.I)
@@ -193,7 +193,7 @@ def extract_candidates(text,now,origin,kind="html",max_days=180,topic_pattern=No
                 title=line[m.end():].strip(" :-,.;")
                 if not pattern.search(title):
                     continue
-                title=re.sub(r"\\s+"," ",title)[:105]
+                title=re.sub(r"\s+"," ",title)[:105]
                 if len(title)<8:continue
                 key=(day.isoformat(),title.lower())
                 if key in seen:continue
