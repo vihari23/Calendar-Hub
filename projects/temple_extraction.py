@@ -39,6 +39,11 @@ MONTH_DATE=re.compile(r"\b("+MONTH_RE+r")\s+(\d{1,2})(?:st|nd|rd|th)?[,]?\s+(20\
 DATE_MONTH=re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+("+MONTH_RE+r")[,]?\s+(20\d{2})\b",re.I)
 ISO_DATE=re.compile(r"\b(20\d{2})[-/](\d{1,2})[-/](\d{1,2})\b")
 US_DATE=re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](20\d{2})\b")
+# A month and year explicitly printed in a flyer heading may establish the
+# year for individual month/day rows on THAT image only. Never use a site-wide
+# or inferred default year, and never auto-publish the OCR interpretation.
+MONTH_YEAR_HEADER=re.compile(r"\\b("+MONTH_RE+r")\\s+(20\\d{2})\\b",re.I)
+MONTH_DAY_ROW=re.compile(r"\\b("+MONTH_RE+r")\\s+(0?[1-9]|[12]\\d|3[01])(?:st|nd|rd|th)?\\b",re.I)
 ASSET_SUFFIX=re.compile(r"\.(?:pdf|png|jpe?g|webp)(?:$|\?)",re.I)
 KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang|rudram|maharudra|abhishe[kc]|satyanarayana|yagam|homam|mandala|purnima|shashti|chaturthi",re.I)
 SKIP=re.compile(r"(?:logo|icon|favicon|background|gopuram|gallery|galleryimage|banner-blank|headerbg)",re.I)
@@ -171,6 +176,31 @@ def extract_candidates(text,now,origin,kind="html",max_days=180,topic_pattern=No
     pattern=topic_pattern or SPECIAL
     out=[];seen=set()
     lines=[re.sub(r"\s+"," ",x).strip() for x in text.splitlines() if x.strip()]
+    # Preserve date/title pairs in image event tables such as Ekta Mandir's
+    # November flyer. The year must be visibly present in the SAME image.
+    headings={(MONTHS.index(m.group(1)[:3].lower())+1,int(m.group(2)))
+              for m in MONTH_YEAR_HEADER.finditer(text)} if kind=="image" else set()
+    if len(headings)==1:
+        month_number, heading_year=next(iter(headings))
+        for line in lines:
+            for m in MONTH_DAY_ROW.finditer(line):
+                if MONTHS.index(m.group(1)[:3].lower())+1!=month_number:
+                    continue
+                try:day=date(heading_year,month_number,int(m.group(2)))
+                except ValueError:continue
+                if not now.date()<=day<=now.date()+timedelta(days=max_days):
+                    continue
+                title=line[m.end():].strip(" :-,.;")
+                if not pattern.search(title):
+                    continue
+                title=re.sub(r"\\s+"," ",title)[:105]
+                if len(title)<8:continue
+                key=(day.isoformat(),title.lower())
+                if key in seen:continue
+                seen.add(key)
+                out.append({"date":day.isoformat(),"title":title,"origin":origin,"kind":kind,
+                            "auto_publish":False,
+                            "reason":"Year is explicitly printed in this flyer; confirm OCR row date/title pairing"})
     for i,line in enumerate(lines):
         if len(line)>400:continue
         context=" ".join(lines[max(0,i-1):min(len(lines),i+2)])[:500]
@@ -198,6 +228,7 @@ def extract_candidates(text,now,origin,kind="html",max_days=180,topic_pattern=No
                 out.append({"date":None,"title":title,"origin":origin,"kind":kind,
                             "auto_publish":False,
                             "reason":"Event name extracted; exact date not established from image or PDF"})
+    out.sort(key=lambda x:(x["date"] is None,x["date"] or "9999",x["title"].lower()))
     return out[:MAX_REVIEW_PER_SOURCE]
 
 def asset_candidates(items,base,source_host):
@@ -275,7 +306,7 @@ def scan_source(source,now,fetcher=fetch_bytes,browser=None,topic_pattern=None):
         # Deduplicate and bound output size.
         dedup={}
         for c in report["candidates"]:dedup[(c["date"],c["title"].lower())]=c
-        report["candidates"]=list(dedup.values())[:MAX_REVIEW_PER_SOURCE]
+        report["candidates"]=sorted(dedup.values(),key=lambda x:(x["date"] is None,x["date"] or "9999",x["title"].lower()))[:MAX_REVIEW_PER_SOURCE]
         report["candidate_count"]=len(report["candidates"])
         report["status"]="partial" if report["warnings"] else (
             "review_needed" if report["candidates"] else "no_verified_events")
