@@ -9,12 +9,12 @@
     {
       "name": "Sri Lalitha Temple",
       "url": "https://srilalithatemple.org/temple-events/",
-      "import": "jsonld"
+      "import": "lalitha_html"
     },
     {
       "name": "Sri Bhakta Hanuman Temple",
       "url": "https://www.hanumantempleaz.org/upcomingevents",
-      "import": "jsonld"
+      "import": "hanuman_html"
     },
     {
       "name": "Ekta Mandir",
