@@ -207,5 +207,56 @@
       "description": "Official November 2026 flyer confirms 18:00 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
       "source": "Ekta Mandir official November 2026 flyer"
     }
+  ],
+  "verified_flyer_events": [
+    {
+      "date": "2026-11-15",
+      "start_time": "17:00",
+      "calendar_title": "Ekta Mandir — Ayyappa Mandala Puja",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-20",
+      "start_time": "10:15",
+      "calendar_title": "Ekta Mandir — Maha Lakshmi Abhishekam",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-21",
+      "start_time": "10:15",
+      "calendar_title": "Ekta Mandir — Balaji Abishek",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-21",
+      "start_time": "14:00",
+      "calendar_title": "Ekta Mandir — Sarva Loka Sata Maharudra Yagam (Maha Rudram Day 1)",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-22",
+      "start_time": "06:00",
+      "calendar_title": "Ekta Mandir — Sarva Loka Sata Maharudra Yagam (Maha Rudram Day 2)",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-24",
+      "start_time": "17:30",
+      "calendar_title": "Ekta Mandir — Karthik Purnima Satyanarayana Puja",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    },
+    {
+      "date": "2026-11-27",
+      "start_time": "18:00",
+      "calendar_title": "Ekta Mandir — Sankata Hara Chaturthi",
+      "source_name": "Ekta Mandir November 2026 temple events flyer",
+      "source_url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg"
+    }
   ]
 }
