@@ -7,7 +7,7 @@ Only compare current events and never manufacture a date from a yearless flyer.
 from __future__ import annotations
 
 from collections import Counter
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
@@ -59,10 +59,21 @@ def read_ics_events(data):
 
 def _expected_from_registry(manifest, now):
     expected = {}
-    current = now.astimezone(TZ).date()
+    local_now = now.astimezone(TZ)
+    current = local_now.date()
+    grace = local_now - timedelta(hours=1)
     for item in manifest.get("events", []):
         d = item["start"][:10]
-        if d < current.isoformat() and item.get("end", "")[:10] <= current.isoformat():
+        end_value = item.get("end", "")
+        if end_value:
+            if "T" in end_value:
+                finish = datetime.fromisoformat(end_value).astimezone(TZ)
+            else:
+                finish = datetime.combine(date.fromisoformat(end_value),
+                                          datetime.min.time(), tzinfo=TZ)
+            if finish <= grace:
+                continue
+        elif d < current.isoformat():
             continue
         entry = {
             "title": item["title"], "date": d,
@@ -73,6 +84,12 @@ def _expected_from_registry(manifest, now):
     for item in manifest.get("verified_flyer_events", []):
         if item["date"] < current.isoformat():
             continue
+        if item["date"] == current.isoformat() and item.get("start_time"):
+            start = datetime.fromisoformat(item["date"] + "T" + item["start_time"]).replace(tzinfo=TZ)
+            # The organizer may not give an end time. Use the same temporary
+            # one-hour display window as the published feed for reconciliation.
+            if start + timedelta(hours=1) <= grace:
+                continue
         entry = {
             "title": item["calendar_title"], "date": item["date"],
             "time": item.get("start_time"),
