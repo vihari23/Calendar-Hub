@@ -349,12 +349,15 @@ def build(out,now=None,network=True):
         if network and slug in ("arizona-telugu","phoenix-temples"):
             for source in manifest["sources"]:
                 importer=source.get("import")
-                if importer not in ("jsonld","ganapati_html"):
+                if importer not in ("jsonld","ganapati_html","ekta_html"):
                     continue
                 attempted+=1
                 try:
                     if importer=="ganapati_html" and slug=="phoenix-temples":
                         newer=auto_from_ganapati(source["url"],now)
+                    elif importer=="ekta_html" and slug=="phoenix-temples":
+                        from projects.ekta_events import auto_from_ekta
+                        newer=auto_from_ekta(source["url"],now,fetch)
                     elif importer=="jsonld":
                         newer=auto_from_jsonld(source["url"],slug)
                     else:
