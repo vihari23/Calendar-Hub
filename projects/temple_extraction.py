@@ -28,7 +28,9 @@ SPECIAL=re.compile(
     r"\b(?:kalyanotsavam|kalyanam|kalyan|utsavam|utsav|abhishekam|annabhishekam|"
     r"mandala puja|tulasi vivah|ugadi|yugadi|navaratri|maha ?shivaratri|"
     r"sivarathri|sri rama navami|chandi|brahmotsavam|rathotsavam|deepavali|"
-    r"diwali|janmashtami|annual celebration|special celebration|homam)\b",re.I)
+    r"diwali|janmashtami|annual celebration|special celebration|homam|" 
+    r"maha ?rudram|maharudra|rudra ?yagam|shata ?rudra|satyanarayana|sankata ?hara|"
+    r"skanda shashti|kartik(?:a)? purnima|mahalakshmi|ayyappa mandala)\b",re.I)
 RECURRING=re.compile(r"\b(?:every|weekly|monthly|1st saturday|2nd saturday|3rd saturday|"
                      r"4th saturday|every purnima|regular services|daily)\b",re.I)
 MONTHS="jan feb mar apr may jun jul aug sep oct nov dec".split()
@@ -67,8 +69,11 @@ class Page(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.text=[];self.items=[];self.skip=0;self._json=None;self.jsonld=[]
+        self.heading_parts=None;self.heading_context=""
     def handle_starttag(self,tag,attrs):
         d=dict(attrs)
+        if tag in ("h1","h2","h3","h4"):
+            self.heading_parts=[]
         if tag in ("style","noscript"):
             self.skip+=1
         if tag=="script":
@@ -77,22 +82,29 @@ class Page(HTMLParser):
         if tag in ("p","div","article","section","h1","h2","h3","h4","li","tr","br"):
             self.text.append("\n")
         if tag=="a" and d.get("href"):
-            self.items.append(("link",d["href"],d.get("title","")))
+            self.items.append(("link",d["href"],d.get("title","")+" "+self.heading_context))
         if tag in ("img","source"):
-            link=d.get("data-src") or d.get("src")
-            if not link and d.get("srcset"):link=d["srcset"].split(",")[0].strip().split(" ")[0]
-            if link:self.items.append(("image",link,d.get("alt","")+" "+d.get("title","")))
+            link=d.get("data-src") or d.get("data-lazy-src") or d.get("src")
+            srcset=d.get("data-srcset") or d.get("srcset")
+            if (not link or str(link).startswith("data:")) and srcset:
+                link=srcset.split(",")[0].strip().split(" ")[0]
+            if link:self.items.append(("image",link,d.get("alt","")+" "+d.get("title","")+" "+self.heading_context))
     def handle_endtag(self,tag):
         if tag in ("style","noscript") and self.skip:self.skip-=1
         if tag=="script":
             if self._json is not None:
                 self.jsonld.append("".join(self._json));self._json=None
             elif self.skip:self.skip-=1
+        if tag in ("h1","h2","h3","h4") and self.heading_parts is not None:
+            self.heading_context=" ".join(" ".join(self.heading_parts).split())[:150]
+            self.heading_parts=None
         if tag in ("p","div","article","section","h1","h2","h3","h4","li","tr"):
             self.text.append("\n")
     def handle_data(self,data):
         if self._json is not None:self._json.append(data)
-        elif not self.skip:self.text.append(data)
+        elif not self.skip:
+            self.text.append(data)
+            if self.heading_parts is not None:self.heading_parts.append(data)
 
 def ocr_png(png):
     proc=subprocess.run(["tesseract","stdin","stdout","-l","eng","--psm","6"],
