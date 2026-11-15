@@ -40,7 +40,7 @@ DATE_MONTH=re.compile(r"\b(\d{1,2})(?:st|nd|rd|th)?\s+("+MONTH_RE+r")[,]?\s+(20\
 ISO_DATE=re.compile(r"\b(20\d{2})[-/](\d{1,2})[-/](\d{1,2})\b")
 US_DATE=re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](20\d{2})\b")
 ASSET_SUFFIX=re.compile(r"\.(?:pdf|png|jpe?g|webp)(?:$|\?)",re.I)
-KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang",re.I)
+KEYWORDS=re.compile(r"event|calendar|202[6-9]|flyer|festival|celebrat|program|schedule|puja|utsav|panchang|rudram|maharudra|abhishe[kc]|satyanarayana|yagam|homam|mandala|purnima|shashti|chaturthi",re.I)
 SKIP=re.compile(r"(?:logo|icon|favicon|background|gopuram|gallery|galleryimage|banner-blank|headerbg)",re.I)
 
 def safe_url(base,url,source_host):
