@@ -125,10 +125,16 @@ jobs:
           indexed={r["name"]:r for r in review["source_audits"]}
           for temple in ("Sri Lalitha Temple","Sri Bhakta Hanuman Temple"):
               row=indexed[temple]
-              assert row.get("dated_schedule_status") in (
-                  "future_events","outdated_schedule","no_qualifying_events","no_dated_events"
-              ),temple+" event importer did not complete"
-              assert "latest_explicit_event_date" in row,temple+" missing source freshness tracking"
+              state=row.get("dated_schedule_status")
+              if state=="import_failed":
+                  # A source timeout/403 is UNKNOWN coverage, never 'zero events'.
+                  assert row["status"] in ("error","blocked"),temple+" import failure lacks error status"
+                  assert row.get("warnings"),temple+" import failure has no diagnostic"
+                  assert row.get("auto_published",0)==0
+                  print(temple,"source access failed; recorded as incomplete coverage")
+              else:
+                  assert state in ("future_events","outdated_schedule","no_qualifying_events","no_dated_events"),temple+" importer status unrecognized"
+                  assert "latest_explicit_event_date" in row,temple+" missing source freshness tracking"
               assert row.get("auto_published",0)>=0
           telugu=json.loads(fetch("feeds/telugu-review.json"))
           workday=json.loads(fetch("feeds/workday-review.json"))
