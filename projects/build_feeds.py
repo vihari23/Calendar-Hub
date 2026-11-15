@@ -448,6 +448,7 @@ def build(out,now=None,network=True):
                     if event["all_day"] else event["end"])
             return finish>now-timedelta(hours=1)
         events=[e for e in events if still_relevant(e)]
+        pre_dedup_events=list(events)
         unique={(e["title"].casefold(),str(e["start"])):e for e in events}
         events=list(unique.values())
         notes=[]
@@ -470,6 +471,19 @@ def build(out,now=None,network=True):
             notes.append("PDF, image and HTML review candidates are not auto-published without organizer corroboration.")
         content=ics(manifest["name"],slug,events,now)
         (out/(slug+".ics")).write_bytes(content)
+        reconciliation=None
+        if slug=="phoenix-temples":
+            from projects.temple_reconciliation import reconcile
+            reconciliation=reconcile(
+                manifest,content,now,
+                source_audits=temple_audit if network else [],
+                input_events=pre_dedup_events)
+            (out/"temple-reconciliation.json").write_text(
+                json.dumps(reconciliation,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+            if network and not reconciliation["verified_passed"]:
+                errors.append("Temple verified-source reconciliation FAILED: "+
+                              str(reconciliation["verified_failures"])+
+                              " missing, duplicate or time-conflicting events")
         if slug=="phoenix-temples":
             (out/"temple-review.json").write_text(json.dumps({
                 "generated_utc":now.astimezone(UTC).isoformat(),
@@ -477,6 +491,9 @@ def build(out,now=None,network=True):
                 "note":"OCR, PDF and unstructured HTML may misassociate dates. Nothing in this file was auto-published to ICS.",
                 "registered_sources":len(manifest["sources"]),
                 "source_audits":temple_audit,
+                "reconciliation_report":"temple-reconciliation.json",
+                "verified_reconciliation_passed":reconciliation["verified_passed"],
+                "verified_reconciliation_failures":reconciliation["verified_failures"],
                 "candidates":temple_review[:120]
             },ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         extended=(telugu_audit or workday_audit or None)
@@ -499,6 +516,8 @@ def build(out,now=None,network=True):
             "pdf_pages_ocr":pdf_ocr,
             "flyer_images_ocr":flyer_ocr,
             "review_candidates":review_count,
+            "verified_reconciliation_passed":reconciliation["verified_passed"] if reconciliation else None,
+            "verified_reconciliation_failures":reconciliation["verified_failures"] if reconciliation else None,
             "manual_discovery_sources":(0 if telugu_audit or workday_audit else discovery),
             "warnings":errors,"notes":notes,
             "generated_utc":now.astimezone(UTC).isoformat()}
