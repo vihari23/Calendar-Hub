@@ -85,10 +85,10 @@ class TempleExtractionTests(unittest.TestCase):
         self.assertEqual(report["auto_published"],0)
         self.assertIn(report["status"],("review_needed","partial"))
     def test_month_year_header_recovers_dated_flyer_rows_for_review_only(self):
-        flyer=("November 2026 - Upcoming Temple Events\\n"
-               "November 20 Maha Lakshmi Abhishekam 10:15 AM\\n"
-               "November 21 Sarva Loka Sata Maharudra Yagam 2:00 PM\\n"
-               "November 22 Sarva Loka Sata Maharudra Yagam - Day 2\\n")
+        flyer=("November 2026 - Upcoming Temple Events\n"
+               "November 20 Maha Lakshmi Abhishekam 10:15 AM\n"
+               "November 21 Sarva Loka Sata Maharudra Yagam 2:00 PM\n"
+               "November 22 Sarva Loka Sata Maharudra Yagam - Day 2\n")
         found=extract_candidates(flyer,NOW,BASE,kind="image")
         dates={x["date"] for x in found if x["date"]}
         self.assertEqual(dates,{"2026-11-20","2026-11-21","2026-11-22"})
