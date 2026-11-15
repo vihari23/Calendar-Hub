@@ -60,6 +60,42 @@
       "name": "Arizona Shiva Vishnu Temple — official 2026 calendar PDF",
       "url": "https://www.arizonashivavishnu.org/_files/ugd/242321_8a6a21e9571649f294d34a4c49d3e3e4.pdf",
       "import": "document"
+    },
+    {
+      "name": "Sri Lalitha Temple — homepage flyers",
+      "url": "https://srilalithatemple.org/",
+      "import": "fullscan",
+      "optional": true
+    },
+    {
+      "name": "Sri Bhakta Hanuman Temple — homepage flyers",
+      "url": "https://www.hanumantempleaz.org/",
+      "import": "fullscan",
+      "optional": true
+    },
+    {
+      "name": "Hindu Temple of Arizona — homepage flyers",
+      "url": "https://hindutempleaz.org/",
+      "import": "fullscan",
+      "optional": true
+    },
+    {
+      "name": "Sai Dhyan Mandir — homepage flyers",
+      "url": "https://saidhyanmandir.org/",
+      "import": "fullscan",
+      "optional": true
+    },
+    {
+      "name": "Arizona Shiva Vishnu Temple — homepage flyers",
+      "url": "https://www.arizonashivavishnu.org/",
+      "import": "fullscan",
+      "optional": true
+    },
+    {
+      "name": "Maha Ganapati Temple — homepage flyers",
+      "url": "https://www.ganapati.org/",
+      "import": "fullscan",
+      "optional": true
     }
   ],
   "events": [
