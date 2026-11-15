@@ -39,7 +39,7 @@ jobs:
           node tests/test_scriptable.mjs
       - name: Build and validate four independent ICS feeds
         run: |
-          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits projects.test_ekta_events projects.test_dated_temple_events -v
+          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits projects.test_ekta_events projects.test_dated_temple_events projects.test_temple_reconciliation -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         env:
@@ -108,6 +108,16 @@ jobs:
           assert {f["id"] for f in widget["feeds"]}==set(names)
           source=json.loads(fetch("feeds/source-status.json"))
           review=json.loads(fetch("feeds/temple-review.json"))
+          reconciliation=json.loads(fetch("feeds/temple-reconciliation.json"))
+          assert reconciliation["schema_version"]==1,"Invalid temple completeness report schema"
+          assert reconciliation["verified_expected"]>=0
+          assert "ocr_review" in reconciliation
+          assert "source_coverage_gaps" in reconciliation
+          assert review["verified_reconciliation_passed"]==reconciliation["verified_passed"]
+          assert review["verified_reconciliation_failures"]==reconciliation["verified_failures"]
+          assert source["phoenix-temples"]["verified_reconciliation_passed"]==reconciliation["verified_passed"]
+          # After deployment so the diagnostics remain accessible even on failure.
+          assert reconciliation["verified_passed"],"Confirmed temple flyer events missing, duplicated or timed incorrectly; see feeds/temple-reconciliation.json"
           assert review["registered_sources"]>=10
           assert len(review["source_audits"])==review["registered_sources"],"Not all temple sources audited"
           assert review["requires_human_review"] is True
