@@ -39,7 +39,7 @@ jobs:
           node tests/test_scriptable.mjs
       - name: Build and validate four independent ICS feeds
         run: |
-          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits -v
+          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits projects.test_ekta_events -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         env:
