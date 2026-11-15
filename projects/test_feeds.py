@@ -25,7 +25,9 @@ class FeedTests(unittest.TestCase):
                 if slug=="arizona-telugu":
                     self.assertEqual(stats["events"],0)
                 elif slug=="phoenix-temples":
-                    self.assertEqual(stats["events"],4)
+                    self.assertGreaterEqual(stats["events"],10)
+                    self.assertIn(b"Maha Rudram Day 1",raw.replace(b"\r\n ",b""))
+                    self.assertIn(b"Maha Rudram Day 2",raw.replace(b"\r\n ",b""))
                 else:
                     self.assertGreater(stats["events"],0)
                 self.assertIn(b"X-VIHARI-GENERATED-UTC:",raw)
