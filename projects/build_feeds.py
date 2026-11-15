@@ -349,11 +349,28 @@ def build(out,now=None,network=True):
         if network and slug in ("arizona-telugu","phoenix-temples"):
             for source in manifest["sources"]:
                 importer=source.get("import")
-                if importer not in ("jsonld","ganapati_html","ekta_html"):
+                if importer not in ("jsonld","ganapati_html","ekta_html","hanuman_html","lalitha_html"):
                     continue
                 attempted+=1
                 try:
-                    if importer=="ganapati_html" and slug=="phoenix-temples":
+                    if importer in ("hanuman_html","lalitha_html") and slug=="phoenix-temples":
+                        from projects.dated_temple_events import import_dated_temple
+                        result=import_dated_temple(source,now)
+                        newer=result["events"]
+                        # Record source-level parser assessment; do not call an
+                        # empty but stale schedule a successful event import.
+                        audit_row=next((x for x in temple_audit if x["name"]==source["name"]),None)
+                        if audit_row is not None:
+                            audit_row["dated_schedule_status"]=result["status"]
+                            audit_row["latest_explicit_event_date"]=result["latest_date"]
+                            audit_row["dated_entries_found"]=result["dated_count"]
+                            audit_row["auto_published"]=len(newer)
+                            audit_row["warnings"].extend(result["warnings"])
+                            if result["status"] in ("outdated_schedule","no_dated_events"):
+                                audit_row["status"]="outdated" if result["status"]=="outdated_schedule" else "incomplete"
+                        for warning in result["warnings"]:
+                            errors.append("Temple dated schedule "+source["name"]+": "+warning)
+                    elif if importer=="ganapati_html" and slug=="phoenix-temples":
                         newer=auto_from_ganapati(source["url"],now)
                     elif importer=="ekta_html" and slug=="phoenix-temples":
                         from projects.ekta_events import auto_from_ekta
@@ -365,6 +382,12 @@ def build(out,now=None,network=True):
                     events.extend(newer);discovered+=len(newer);accessible+=1
                 except Exception as exc:
                     errors.append(source["url"]+": "+str(exc)[:100])
+                    if slug=="phoenix-temples" and importer in ("hanuman_html","lalitha_html"):
+                        audit_row=next((x for x in temple_audit if x["name"]==source["name"]),None)
+                        if audit_row is not None:
+                            audit_row["status"]="blocked" if "403" in str(exc) else "error"
+                            audit_row["dated_schedule_status"]="import_failed"
+                            audit_row["warnings"].append("Dedicated event importer failed: "+str(exc)[:150])
         if network and slug=="phoenix-road-closures":
             attempted+=1
             try:
