@@ -343,7 +343,7 @@ def build(out,now=None,network=True):
                 audit=scan_source(src,now)
                 temple_audit.append(audit)
                 temple_review.extend(audit.get("candidates",[]))
-                if audit["status"] in ("blocked","error","partial"):
+                if audit["status"] in ("blocked","error","partial") and not src.get("optional",False):
                     errors.append("Temple source "+src["name"]+": "+
                                   ("; ".join(audit.get("warnings",[])) or audit["status"])[:180])
         if network and slug in ("arizona-telugu","phoenix-temples"):
