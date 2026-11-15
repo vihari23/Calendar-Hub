@@ -22,6 +22,11 @@
       "import": "ekta_html"
     },
     {
+      "name": "Ekta Mandir — homepage November events flyers",
+      "url": "https://www.ektamandiraz.org/",
+      "import": "fullscan"
+    },
+    {
       "name": "Hindu Temple of Arizona",
       "url": "https://hindutempleaz.org/events-list/",
       "import": "jsonld"
@@ -111,6 +116,60 @@
       "url": "https://svktemple.com/",
       "description": "Temple's official portal lists Tulasi Vivah on Saturday, November 21, 2026. No ceremonial time stated; check with temple before visiting.",
       "source": "Sri Venkata Krishna Kshetra official portal"
+    },
+    {
+      "title": "Ekta Mandir — Ayyappa Mandala Puja",
+      "start": "2026-11-15T17:00:00-07:00",
+      "end": "2026-11-15T18:00:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 17:00 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
+    },
+    {
+      "title": "Ekta Mandir — Maha Lakshmi Abhishekam",
+      "start": "2026-11-20T10:15:00-07:00",
+      "end": "2026-11-20T11:15:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 10:15 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
+    },
+    {
+      "title": "Ekta Mandir — Sarva Loka Sata Maharudra Yagam (Maha Rudram Day 1)",
+      "start": "2026-11-21T14:00:00-07:00",
+      "end": "2026-11-21T15:00:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 14:00 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
+    },
+    {
+      "title": "Ekta Mandir — Sarva Loka Sata Maharudra Yagam (Maha Rudram Day 2)",
+      "start": "2026-11-22T06:00:00-07:00",
+      "end": "2026-11-22T07:00:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 6:00 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
+    },
+    {
+      "title": "Ekta Mandir — Karthik Purnima Satyanarayana Puja",
+      "start": "2026-11-24T17:30:00-07:00",
+      "end": "2026-11-24T18:30:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 17:30 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
+    },
+    {
+      "title": "Ekta Mandir — Sankata Hara Chaturthi",
+      "start": "2026-11-27T18:00:00-07:00",
+      "end": "2026-11-27T19:00:00-07:00",
+      "location": "Bharatiya Ekta Mandir, 2804 W Maryland Ave, Phoenix, AZ 85017, USA",
+      "url": "https://www.ektamandiraz.org/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg",
+      "description": "Official November 2026 flyer confirms 18:00 Phoenix time as start; calendar ends after a placeholder 60-minute window (actual ceremony end NOT provided). Verify duration with organizer.",
+      "source": "Ekta Mandir official November 2026 flyer"
     }
   ]
 }
