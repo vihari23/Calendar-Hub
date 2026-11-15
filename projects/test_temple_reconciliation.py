@@ -72,6 +72,19 @@ class TempleReconciliationTests(unittest.TestCase):
         self.assertEqual(result["ocr_review"][0]["status"], "possible_missing_needs_review")
         self.assertEqual(result["source_coverage_gaps"][0]["status"], "partial")
 
+    def test_expired_same_day_event_is_not_falsely_missing(self):
+        later = datetime(2026, 11, 21, 13, tzinfo=ZoneInfo("America/Phoenix"))
+        result = reconcile(manifest(), ics("Temples", "temples", [], later), later)
+        self.assertEqual(result["verified_expected"], 0)
+        self.assertTrue(result["verified_passed"])
+
+    def test_manifest_verification_uses_event_end_not_just_date(self):
+        later = datetime(2026, 11, 21, 13, tzinfo=ZoneInfo("America/Phoenix"))
+        j = {"events": [{"title": TITLE, "start": "2026-11-21T10:15:00-07:00",
+                         "end": "2026-11-21T11:15:00-07:00"}]}
+        result = reconcile(j, ics("Temples", "temples", [], later), later)
+        self.assertTrue(result["verified_passed"])
+
     def test_past_verified_events_are_not_falsely_missing(self):
         old = {"events": [], "verified_flyer_events": [{
             "calendar_title": TITLE, "date": "2026-11-10",
