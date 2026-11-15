@@ -196,8 +196,19 @@ def auto_from_ekta(url, now, fetcher):
                 except Exception:
                     details[link] = ""
             times = detail_times(details[link], when)
+        # Official November 2026 event poster supersedes an outdated
+        # detail-page time for the November 21 Balaji occurrence only.
+        flyer_override = (when == date(2026, 11, 21) and
+                          re.search(r"balaji abishek", title, re.I) is not None)
+        if flyer_override:
+            times = (time(10, 15), time(11, 15))
+            link = ("https://www.ektamandiraz.org/wp-content/uploads/2026/11/"
+                    "WhatsApp-Image-2026-10-31-at-8.02.49-AM-569x1024.jpeg")
         start_time, end_time = times or (time(8), time(9))
-        note = ("Organizer's matching detail page confirms this ceremony time."
+        note = (("Official November 2026 flyer confirms 10:15 AM start; the 60-minute "
+                 "end is a CALENDAR DISPLAY WINDOW, not a confirmed ceremony end time.")
+                if flyer_override else
+                "Organizer's matching detail page confirms this ceremony time."
                 if times else
                 "8:00–9:00 AM is a calendar reminder window, NOT a confirmed ceremony time. "
                 "Check the official event page before visiting.")
