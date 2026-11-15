@@ -40,7 +40,10 @@ class EktaImporterTests(unittest.TestCase):
         self.assertIn("2027-01-16", days)
         self.assertIn("2026-11-15", days)
         self.assertTrue(all(not e["all_day"] for e in events))
-        self.assertTrue(all(e["start"].hour == 8 for e in events))
+        self.assertTrue(all(e["start"].hour == 8 for e in events if e["start"].date().isoformat() != "2026-11-21"))
+        balaji = next(e for e in events if e["start"].date().isoformat() == "2026-11-21")
+        self.assertEqual((balaji["start"].hour, balaji["start"].minute), (10, 15))
+        self.assertIn("CALENDAR DISPLAY WINDOW", balaji["description"])
         self.assertTrue(any("NOT a confirmed ceremony time" in e["description"] for e in events))
 
     def test_absent_year_is_not_fabricated(self):
