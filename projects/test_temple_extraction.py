@@ -84,6 +84,21 @@ class TempleExtractionTests(unittest.TestCase):
         self.assertGreaterEqual(report["candidate_count"],1)
         self.assertEqual(report["auto_published"],0)
         self.assertIn(report["status"],("review_needed","partial"))
+    def test_homepage_november_poster_with_generic_filename(self):
+        homepage="https://example-temple.org/"
+        flyer=homepage+"wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31.jpeg"
+        html=('<html><h2>November 2026 Events</h2>'
+              '<img alt="Temple schedule" src="/wp-content/uploads/2026/11/WhatsApp-Image-2026-10-31.jpeg">'
+              '</html>').encode()
+        def fake_fetch(url,limit):
+            if url==homepage:return html,"text/html"
+            if url==flyer:return png_sample(),"image/png"
+            raise AssertionError("Unexpected URL: "+url)
+        report=scan_source({"name":"Official homepage","url":homepage},NOW,fetcher=fake_fetch)
+        self.assertEqual(report["images_ocr"],1)
+        self.assertEqual(report["assets_checked"],1)
+        self.assertEqual(report["assets_scanned"][0]["url"],flyer)
+
     def test_blocked_site_is_reported_not_silently_accepted(self):
         def reject(url,limit):raise RuntimeError("HTTP Error 403: Forbidden")
         x=scan_source({"name":"Block","url":BASE},NOW,fetcher=reject)
