@@ -131,7 +131,7 @@ def _review_ocr(candidates, actual):
     return review
 
 
-def reconcile(manifest, ics_bytes, now, source_audits=None):
+def reconcile(manifest, ics_bytes, now, source_audits=None, input_events=None):
     """Compare a verified source ledger to real ICS entries; report, don't auto-add."""
     actual = read_ics_events(ics_bytes)
     expected = _expected_from_registry(manifest, now)
@@ -155,6 +155,22 @@ def reconcile(manifest, ics_bytes, now, source_audits=None):
         if number > 1 and not any(_title(e["expected"]["title"]) == title
                                   and e["expected"]["date"] == d for e in duplicates):
             duplicates.append({"title": title, "date": d, "found": number})
+    source_duplicates = []
+    if input_events is not None:
+        raw_keys = {}
+        for ev in input_events:
+            start = ev.get("start")
+            d = (start.date().isoformat() if isinstance(start, datetime)
+                 else start.isoformat() if isinstance(start, date) else str(start)[:10])
+            title = ev.get("title", "")
+            raw_keys.setdefault((d, _title(title)), []).append(ev)
+        for (d, title), group in raw_keys.items():
+            if len(group) > 1:
+                source_duplicates.append({
+                    "date": d, "normalized_title": title, "count": len(group),
+                    "source_urls": list(dict.fromkeys(ev.get("url", "") for ev in group)),
+                    "note": "Multiple source events collapsed before ICS serialization; review for genuine duplication."
+                })
     source_audits = source_audits or []
     candidates = [c for row in source_audits for c in row.get("candidates", [])]
     ocr_review = _review_ocr(candidates, actual)
@@ -167,7 +183,7 @@ def reconcile(manifest, ics_bytes, now, source_audits=None):
     return {
         "schema_version": 1, "generated_utc": now.astimezone(timezone.utc).isoformat(),
         "verified_expected": len(expected), "matched": len(matched),
-        "missing": missing, "duplicates": duplicates, "time_conflicts": time_conflicts,
+        "missing": missing, "duplicates": duplicates, "source_duplicates_removed": source_duplicates, "time_conflicts": time_conflicts,
         "verified_failures": failures, "verified_passed": failures == 0,
         "ocr_candidate_count": len(ocr_review),
         "ocr_review": ocr_review, "source_coverage_gaps": source_gaps,
