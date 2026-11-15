@@ -107,14 +107,28 @@ def _match_expected(expected, actual):
 
 
 def _similar(a, b):
-    first, second = _title(a), _title(b)
+    """Review-only fuzzy matching, tolerant of flyer OCR and spelling variants."""
+    equivalents = {"abishek": "abhishekam", "abhishek": "abhishekam",
+                   "abhishekham": "abhishekam", "chathurthi": "chaturthi",
+                   "pooja": "puja"}
+    ignored = {"ekta", "mandir", "temple", "the", "at", "am", "pm",
+               "onwards", "start", "from", "of"}
+    def tokens(value):
+        words = _title(value).split()
+        return [equivalents.get(word, word) for word in words
+                if word not in ignored and not word.isdecimal()]
+    first, second = tokens(a), tokens(b)
     if not first or not second:
         return 0.0
-    if first in second or second in first:
-        return 0.9
-    aa, bb = set(first.split()), set(second.split())
-    return max(len(aa & bb) / max(1, len(aa | bb)),
-               SequenceMatcher(None, first, second).ratio())
+    aa, bb = set(first), set(second)
+    overlap = len(aa & bb)
+    coverage = overlap / max(1, min(len(aa), len(bb)))
+    # At least two distinctive shared tokens avoids falsely equating all
+    # ceremonies that happen to mention just "puja" or "abhishekam".
+    if overlap >= 2 and coverage >= 0.75:
+        return 0.95
+    return max(overlap / max(1, len(aa | bb)),
+               SequenceMatcher(None, " ".join(first), " ".join(second)).ratio())
 
 
 def _review_ocr(candidates, actual):
