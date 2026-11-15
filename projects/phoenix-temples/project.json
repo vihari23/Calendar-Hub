@@ -19,7 +19,7 @@
     {
       "name": "Ekta Mandir",
       "url": "https://www.ektamandiraz.org/religious-events",
-      "import": "fullscan"
+      "import": "ekta_html"
     },
     {
       "name": "Hindu Temple of Arizona",
