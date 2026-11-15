@@ -15,34 +15,34 @@ Daily source-by-source checks inspect each of the temple's official pages in the
 
 ## Flyer-to-ICS completeness validation
 
-The publishing pipeline now writes **\`feeds/temple-reconciliation.json\`** alongside
-\`temple-review.json\`. It independently parses the generated Phoenix Temple ICS,
-compares the confirmed \`projects/phoenix-temples/project.json\` curated event
-registry and \`verified_flyer_events\` ledger, and reports:
+The publishing pipeline now writes **`feeds/temple-reconciliation.json`** alongside
+`temple-review.json`. It independently parses the generated Phoenix Temple ICS,
+compares the confirmed `projects/phoenix-temples/project.json` curated event
+registry and `verified_flyer_events` ledger, and reports:
 
-- \`missing\`: a confirmed, still-relevant event absent from generated ICS;
-- \`duplicates\`: two ICS events with the same title and date;
-- \`source_duplicates_removed\`: duplicate importer inputs collapsed by the ICS generator;
-- \`time_conflicts\`: a confirmed flyer start time differs from the generated ICS time;
-- \`ocr_review\`: image/PDF-only discoveries that may indicate missing events, **not verified**;
-- \`source_coverage_gaps\`: incomplete, inaccessible, or outdated source pages.
+- `missing`: a confirmed, still-relevant event absent from generated ICS;
+- `duplicates`: two ICS events with the same title and date;
+- `source_duplicates_removed`: duplicate importer inputs collapsed by the ICS generator;
+- `time_conflicts`: a confirmed flyer start time differs from the generated ICS time;
+- `ocr_review`: image/PDF-only discoveries that may indicate missing events, **not verified**;
+- `source_coverage_gaps`: incomplete, inaccessible, or outdated source pages.
 
-The verified ledger tracks exact \`calendar_title\`, \`date\`, \`start_time\`
-(\`HH:MM\`, America/Phoenix), \`source_name\`, and official \`source_url\`.
+The verified ledger tracks exact `calendar_title`, `date`, `start_time`
+(`HH:MM`, America/Phoenix), `source_name`, and official `source_url`.
 Add a ledger entry **only after individually checking the organizer's poster**;
 unknown ending times may use a clearly marked calendar-only display window.
 The system skips ended calendar events to avoid false missing warnings.
 
 GitHub Actions validates the live, publicly deployed reconciliation report and
-fails post-deployment validation if \`verified_passed\` is false. This makes the
+fails post-deployment validation if `verified_passed` is false. This makes the
 diagnostic report accessible even when validation fails. OCR-only findings never
 autopublish or fail verified-source reconciliation without independent confirmation.
 
 Run tests with:
 
-\`\`\`bash
+```bash
 python -m unittest projects.test_temple_reconciliation -v
-\`\`\`
+```
 
 A syntactically healthy ICS or a completed image scan does not imply full
 completeness. The audit is restricted to accessible registered source pages,
