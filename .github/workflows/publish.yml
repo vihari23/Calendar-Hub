@@ -39,7 +39,7 @@ jobs:
           node tests/test_scriptable.mjs
       - name: Build and validate four independent ICS feeds
         run: |
-          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits projects.test_ekta_events -v
+          python -m unittest projects.test_feeds projects.test_temple_extraction projects.test_source_audits projects.test_ekta_events projects.test_dated_temple_events -v
           python -m projects.build_feeds --out dist/feeds
       - name: Verify live ICS feeds and generate dashboard
         env:
@@ -112,6 +112,14 @@ jobs:
           assert len(review["source_audits"])==review["registered_sources"],"Not all temple sources audited"
           assert review["requires_human_review"] is True
           assert source["phoenix-temples"]["source_checks"]==review["registered_sources"]
+          indexed={r["name"]:r for r in review["source_audits"]}
+          for temple in ("Sri Lalitha Temple","Sri Bhakta Hanuman Temple"):
+              row=indexed[temple]
+              assert row.get("dated_schedule_status") in (
+                  "future_events","outdated_schedule","no_qualifying_events","no_dated_events"
+              ),temple+" event importer did not complete"
+              assert "latest_explicit_event_date" in row,temple+" missing source freshness tracking"
+              assert row.get("auto_published",0)>=0
           telugu=json.loads(fetch("feeds/telugu-review.json"))
           workday=json.loads(fetch("feeds/workday-review.json"))
           road=json.loads(fetch("feeds/road-audit.json"))
