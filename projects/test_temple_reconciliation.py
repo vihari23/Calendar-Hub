@@ -85,6 +85,16 @@ class TempleReconciliationTests(unittest.TestCase):
         result = reconcile(j, ics("Temples", "temples", [], later), later)
         self.assertTrue(result["verified_passed"])
 
+    def test_flyer_spelling_variants_match_existing_ics(self):
+        original = event()
+        data = ics("Temples", "temples", [original], NOW)
+        scans = [{"name": "Ekta homepage", "status": "review_needed", "candidates": [
+            {"date": "2026-11-21", "title": "Balaji Abhishekam 10:15 AM",
+             "origin": FLYER}]}]
+        result = reconcile(manifest(), data, NOW, source_audits=scans)
+        self.assertEqual(result["ocr_review"][0]["status"], "likely_covered_needs_review")
+        self.assertTrue(result["verified_passed"])
+
     def test_past_verified_events_are_not_falsely_missing(self):
         old = {"events": [], "verified_flyer_events": [{
             "calendar_title": TITLE, "date": "2026-11-10",
