@@ -370,7 +370,7 @@ def build(out,now=None,network=True):
                                 audit_row["status"]="outdated" if result["status"]=="outdated_schedule" else "incomplete"
                         for warning in result["warnings"]:
                             errors.append("Temple dated schedule "+source["name"]+": "+warning)
-                    elif if importer=="ganapati_html" and slug=="phoenix-temples":
+                    elif importer=="ganapati_html" and slug=="phoenix-temples":
                         newer=auto_from_ganapati(source["url"],now)
                     elif importer=="ekta_html" and slug=="phoenix-temples":
                         from projects.ekta_events import auto_from_ekta
