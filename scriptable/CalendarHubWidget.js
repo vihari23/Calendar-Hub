@@ -16,13 +16,18 @@ const PAL=[
 const DEFAULT_FEEDS=[
  {id:"panchangam",name:"Phoenix Panchangam",kind:"hub",color:"#F8C76A"},
  {id:"india_ott",name:"India OTT Releases",kind:"hub",color:"#C5A5FF"},
- {id:"bulk_trash",name:"Arizona Bulk Trash",kind:"hub",color:"#73E0C1"}
+ {id:"bulk_trash",name:"Arizona Bulk Trash",kind:"hub",color:"#73E0C1"},
+ {id:"arizona-telugu",name:"AZ Telugu Events",kind:"hub",color:"#F8C76A"},
+ {id:"phoenix-temples",name:"Phoenix Temples",kind:"hub",color:"#C5A5FF"},
+ {id:"workday-releases",name:"Workday Releases",kind:"hub",color:"#8FD5FF"},
+ {id:"phoenix-road-closures",name:"Phoenix Road Closures",kind:"hub",color:"#FF9C82"}
 ];
 const INITIAL_VIEWS=[
- {id:"all",name:"All Subscribed Calendars",feeds:["panchangam","india_ott","bulk_trash"],dailyPanchangam:false},
+ {id:"all",name:"All Subscribed Calendars",feeds:DEFAULT_FEEDS.map(f=>f.id),dailyPanchangam:false},
  {id:"culture",name:"Panchangam",feeds:["panchangam"],dailyPanchangam:true},
  {id:"entertainment",name:"India OTT",feeds:["india_ott"]},
- {id:"home",name:"Home & Trash",feeds:["bulk_trash"]}
+ {id:"home",name:"Home & Trash",feeds:["bulk_trash"]},
+ {id:"workday",name:"Workday Releases",feeds:["workday-releases"]}
 ];
 const MONTH=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -39,7 +44,23 @@ function loadSettings(){
  if(!s||s.version!==1||!Array.isArray(s.feeds)||!Array.isArray(s.views)){
    const fresh=defaults();saveSettings(fresh);return fresh;
  }
- // Existing user configuration must not be overwritten by future script updates.
+ // Add newly available Hub calendars without overwriting the user's custom
+ // feed colors, edited views, and selections. One-time migration only.
+ if(!s.workdayHubMigrationV1){
+   const original=["panchangam","india_ott","bulk_trash"];
+   const all=s.views.find(v=>v.id==="all");
+   const pristineAll=!!(all&&all.feeds.length===3&&original.every(id=>all.feeds.includes(id)));
+   for(const entry of DEFAULT_FEEDS){
+     if(!s.feeds.some(f=>f.id===entry.id)){
+       s.feeds.push(Object.assign({},entry));
+       if(pristineAll)all.feeds.push(entry.id);
+     }
+   }
+   if(!s.views.some(v=>v.id==="workday"))
+     s.views.push({id:"workday",name:"Workday Releases",feeds:["workday-releases"],dailyPanchangam:false});
+   s.workdayHubMigrationV1=true;
+   saveSettings(s);
+ }
  return s;
 }
 function cleanHex(value){
