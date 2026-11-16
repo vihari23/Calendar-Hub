@@ -72,11 +72,18 @@ def build_workday_events(curated, now, *, horizon_days=HORIZON_DAYS):
             "Actual tenant publication and feature availability are not verified here.",
         ))
         out.append(_entry(
+            "Workday Sandbox — weekly refresh verification", day,
+            TENANT_INFO,
+            "Most standard Sandbox tenants refresh from Production at the weekly service update. "
+            "This is a routine Friday CHECK, not a verified refresh for your tenant or time zone. "
+            "Confirm timing, tenant exclusions, and exemption deadline in Workday Community.",
+        ))
+        out.append(_entry(
             "Workday Release Center — Friday notes (usual schedule)", day,
             RELEASE_SCHEDULE,
             "Normal Friday Release Center update for Features, Fixes, Retirements "
-            "and Coming Soon. Check documentation announcement exceptions. "
-            "Sandbox refresh schedules vary by tenant; this is NOT a refresh confirmation.",
+            "and Coming Soon. Workday Guides typically update every two weeks; "
+            "check Guides when issued. Check documentation announcement exceptions. "
         ))
 
     # Production dates are curated/published by a named university. Schedule
