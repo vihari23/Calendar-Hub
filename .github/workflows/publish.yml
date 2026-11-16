@@ -144,6 +144,7 @@ jobs:
           assert len(road["source_audits"])==road["checked_sources"]==road["registered_sources"]==3
           assert source["arizona-telugu"]["source_checks"]==12
           assert source["workday-releases"]["source_checks"]==4
+          assert source["workday-releases"]["events"]>=120,"Workday recurring coverage unexpectedly missing"
           assert source["phoenix-road-closures"]["source_checks"]==3
           assert telugu["requires_human_review"] and workday["requires_human_review"]
           print("Full-source audits verified: Telugu 12, Workday 4, road 3")

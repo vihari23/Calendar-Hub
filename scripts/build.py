@@ -214,7 +214,7 @@ def dashboard(cfg,status):
             if today<=date.fromisoformat(e["date"])<=horizon:
                 agenda.append((e["start"],f["id"],f["name"],e))
     agenda.sort(key=lambda x:x[0])
-    rows=['<li data-feed="'+safe(fid)+'"><time>'+safe(e["date"])+'</time><span>'+safe(e["name"])+'<small>'+safe(name)+'</small></span></li>' for _,fid,name,e in agenda[:150]]
+    rows=['<li data-feed="'+safe(fid)+'"><time>'+safe(e["date"])+'</time><span>'+safe(e["name"])+'<small>'+safe(name)+'</small></span></li>' for _,fid,name,e in agenda[:1000]]
     filters=['<label><input type="checkbox" data-choice="'+safe(f["id"])+'" checked> '+safe(f["name"])+'</label>' for f in readings]
     good=sum(f["status"]=="healthy" for f in readings)
     page=r"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>__TITLE__</title><meta name="theme-color" content="#0d286e"><meta name="application-name" content="Calendar Hub"><meta name="apple-mobile-web-app-title" content="Calendar Hub"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">

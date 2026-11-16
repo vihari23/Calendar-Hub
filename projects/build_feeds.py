@@ -441,6 +441,11 @@ def build(out,now=None,network=True):
                          "A valid calendar does not prove road data completeness. Check AZ511 before driving."],
                 "automatic_events_found":discovered,
             },indent=2)+"\n",encoding="utf-8")
+        if slug=="workday-releases":
+            from projects.workday_recurrences import build_workday_events
+            calendar_checkpoints=build_workday_events(manifest["events"],now)
+            events.extend(normalize(item) for item in calendar_checkpoints)
+            notes_for_workday=f"{len(calendar_checkpoints)} source-labeled schedule checks and planning milestones generated"
         # Published subscriptions contain current or future events only. Historical
         # audit records remain in project.json, not on subscribers' calendars.
         def still_relevant(event):
@@ -455,6 +460,9 @@ def build(out,now=None,network=True):
         if not events:
             notes.append("No verified current or upcoming events; an empty ICS is intentional.")
         if slug=="workday-releases":
+            notes.append(notes_for_workday)
+            notes.append("Wednesday/Friday entries are recurring CHECK reminders, not verified publications or refreshes.")
+            notes.append("Preview milestone estimates use a five-week planning window; tenant Community verification is still required.")
             notes.append("Future Workday milestones remain tentative; official authenticated Workday Community verification is not available.")
             if workday_audit:
                 notes.append("Institution-published release dates cross-checked; differences appear in workday-review.json.")

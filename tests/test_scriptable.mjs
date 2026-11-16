@@ -21,7 +21,9 @@ assert.equal(functions.safeURL("https://example.org/events.ics"),"https://exampl
 assert.equal(functions.cleanHex("e5a3be"),"#E5A3BE");
 assert.equal(functions.cleanHex("nonsense"),null);
 const config=functions.defaults();
-assert.equal(config.feeds.length,3);
+assert.equal(config.feeds.length,7);
+assert.equal(config.views.find(v=>v.id==="workday").feeds[0],"workday-releases");
+assert.equal(config.views.find(v=>v.id==="all").feeds.includes("workday-releases"),true);
 assert.equal(functions.viewFor(config,"entertainment").feeds[0],"india_ott");
 assert.equal(functions.viewFor(config,"home").feeds[0],"bulk_trash");
 assert.equal(functions.viewFor(config,"unknown").id,"all");

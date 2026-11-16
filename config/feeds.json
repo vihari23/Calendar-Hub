@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "hub_name": "Vihari Calendar Hub",
-  "look_ahead_days": 45,
+  "look_ahead_days": 365,
   "feeds": [
     {
       "id": "panchangam",
@@ -66,7 +66,7 @@
     {
       "id": "workday-releases",
       "name": "Workday Releases & Planned Milestones",
-      "description": "Verified Workday production releases; no speculative future milestones",
+      "description": "Production releases, What's New and Release Center checks, Sandbox Preview planning, and source-verified Workday milestones",
       "kind": "Technology & work",
       "url": "https://vihari23.github.io/Calendar-Hub/feeds/workday-releases.ics",
       "source_repository": "https://github.com/vihari23/Calendar-Hub",
